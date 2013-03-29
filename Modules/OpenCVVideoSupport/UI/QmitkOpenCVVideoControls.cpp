@@ -32,6 +32,7 @@ QmitkOpenCVVideoControls::QmitkOpenCVVideoControls( QmitkVideoBackground* _Video
   m_Controls->setupUi(this);
   m_Controls->FileChooser->SetFileMustExist(true);
   m_Controls->FileChooser->SetSelectDir(false);
+  m_Controls->FileChooser->SetReadOnly(false);
 
   this->SetStdMultiWidget(_MultiWidget);
   this->SetVideoBackground(_VideoBackground);
