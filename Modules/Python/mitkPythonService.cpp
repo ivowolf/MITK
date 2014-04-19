@@ -15,7 +15,18 @@ See LICENSE.txt or http://www.mitk.org for details.
 ===================================================================*/
 
 #include "mitkPythonService.h"
-#include <Python.h>
+//#include <Python.h>
+# ifdef _DEBUG
+#   undef _DEBUG
+#   if defined(_MSC_VER) && _MSC_VER >= 1400
+#     define _CRT_NOFORCE_MANIFEST 1
+#  endif
+#   include <Python.h>
+#  define _DEBUG
+# else
+#   include <Python.h>
+# endif
+
 #include <mitkIOUtil.h>
 #include <QFile>
 #include <QDir>
