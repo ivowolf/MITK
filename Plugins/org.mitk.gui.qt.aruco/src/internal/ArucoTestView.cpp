@@ -217,7 +217,8 @@ void ArucoTestView::Start()
   m_VideoBackground->Enable();
 
   // Setup aruco
-  TheIntrinsicFile="/home/riecker/Development/aruco/out_camera_data.xml";
+//  TheIntrinsicFile="/home/riecker/Development/aruco/out_camera_data.xml";
+  TheIntrinsicFile="/home/riecker/Development/src/Seminar/Plugins/org.mitk.gui.qt.aruco/out_camera_data.xml";
   if (TheIntrinsicFile!="") {
     TheCameraParameters.readFromXMLFile(TheIntrinsicFile);
     TheCameraParameters.resize(m_VideoSource->GetImage().size());

@@ -122,7 +122,8 @@ bool mitk::ArUcoTrackingDevice::OpenConnection()
 //    m_VideoSource->SetVideoFileInput("D:/Home/ivo/Vorlesungen/MBV/Allgemein/Uebungen/P-Aruco/aruco-Testdata/testdata/single/video.avi", true);
     m_VideoSource->SetVideoCameraInput(0);
 //    m_CameraParameters.readFromXMLFile("V:/windows/x64/aruco-1.2.4/bin/Debug/intrinsics.yml");
-    m_CameraParameters.readFromXMLFile("/home/riecker/Development/aruco/out_camera_data.xml");
+//    m_CameraParameters.readFromXMLFile("/home/riecker/Development/aruco/out_camera_data.xml");
+    m_CameraParameters.readFromXMLFile("/home/riecker/Development/src/Seminar/Plugins/org.mitk.gui.qt.aruco/out_camera_data.xml");
     m_MarkerSize = 4;
     this->SetState(Ready);
     return true;
