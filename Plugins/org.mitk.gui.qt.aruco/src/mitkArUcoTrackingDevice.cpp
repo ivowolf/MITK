@@ -49,13 +49,7 @@ mitk::TrackingTool* mitk::ArUcoTrackingDevice::AddTool( const char* toolName, co
 {
   // InternalTrackingTool: add using devices as friends - really necessary? -> probably refactor
   mitk::ArUcoTool::Pointer t = mitk::ArUcoTool::New();
-  //if (t->LoadFile(fileName) == false)
-  //{
-  //  return NULL;
-  //}
-  //t->SetToolName(toolName);
-  //if (this->InternalAddTool(t) == false)
-  //  return NULL;
+  t->SetToolName("Aruco_Tool");
   return t.GetPointer();
 }
 
@@ -117,12 +111,8 @@ mitk::TrackingTool* mitk::ArUcoTrackingDevice::GetTool(unsigned int toolNumber) 
 bool mitk::ArUcoTrackingDevice::OpenConnection()
 {
   try {
-//    m_VideoSource->SetVideoFileInput("http://192.168.2.106:80/video.cgi?resolution=640x480&.mjpg", false);
     m_FirstGrabAfterOpening = true;
-//    m_VideoSource->SetVideoFileInput("D:/Home/ivo/Vorlesungen/MBV/Allgemein/Uebungen/P-Aruco/aruco-Testdata/testdata/single/video.avi", true);
     m_VideoSource->SetVideoCameraInput(0);
-//    m_CameraParameters.readFromXMLFile("V:/windows/x64/aruco-1.2.4/bin/Debug/intrinsics.yml");
-//    m_CameraParameters.readFromXMLFile("/home/riecker/Development/aruco/out_camera_data.xml");
     m_CameraParameters.readFromXMLFile("/home/riecker/Development/src/Seminar/Plugins/org.mitk.gui.qt.aruco/out_camera_data.xml");
     m_MarkerSize = 4;
     this->SetState(Ready);

@@ -1,6 +1,7 @@
 project(org_mitk_gui_qt_aruco)
 
 include_directories("/home/riecker/Development/libs/aruco-1.2.5/src")
+include_directories("/home/riecker/Development/aruco/aruco-1.2.5/src")
 
 LINK_DIRECTORIES("/usr/local/lib")
 

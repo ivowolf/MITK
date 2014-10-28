@@ -85,7 +85,6 @@ void ArucoTestView::CreateQtPartControl( QWidget *parent )
   connect( m_Controls.buttonSetupTracker, SIGNAL(clicked()), this, SLOT(SetupArUcoTracker()) );
   connect( m_Controls.buttonPerformImageProcessing, SIGNAL(clicked()), this, SLOT(DoImageProcessing()) );
   connect( m_Controls.buttonStart, SIGNAL(clicked()), this, SLOT(Start()) );
-  connect( m_Controls.liveTracking, SIGNAL(clicked()), this, SLOT(StartLiveTracking()) );
 
   // retrieve old preferences
   m_VideoSource = mitk::OpenCVVideoSource::New();
@@ -96,19 +95,6 @@ void ArucoTestView::CreateQtPartControl( QWidget *parent )
 void ArucoTestView::OnSelectionChanged( berry::IWorkbenchPart::Pointer /*source*/,
                                              const QList<mitk::DataNode::Pointer>& nodes )
 {
-  // iterate all selected objects, adjust warning visibility
-  //foreach( mitk::DataNode::Pointer node, nodes )
-  //{
-  //  if( node.IsNotNull() && dynamic_cast<mitk::Image*>(node->GetData()) )
-  //  {
-  //    m_Controls.labelWarning->setVisible( false );
-  //    m_Controls.buttonPerformImageProcessing->setEnabled( true );
-  //    return;
-  //  }
-  //}
-
-  //m_Controls.labelWarning->setVisible( true );
-  //m_Controls.buttonPerformImageProcessing->setEnabled( false );
 }
 
 void ArucoTestView::SetupArUcoTracker()
@@ -189,17 +175,8 @@ void ArucoTestView::OnTimer()
   mitk::RenderingManager::GetInstance()->RequestUpdateAll();  //update the render windows
 }
 
-void ArucoTestView::StartLiveTracking()
-{
-    MDetector.getThresholdParams( ThresParam1,ThresParam2);
-    MDetector.setCornerRefinementMethod(MarkerDetector::LINES);
-    MDetector.detect(m_VideoSource->GetImage(),TheMarkers,TheCameraParameters,TheMarkerSize);
-}
-
 void ArucoTestView::Start()
 {
-//  m_VideoSource->SetVideoFileInput("http://192.168.2.106:80/video.cgi?resolution=640x480&.mjpg", false);
-//  m_VideoSource->SetVideoFileInput("D:/Home/ivo/Vorlesungen/MBV/Allgemein/Uebungen/P-Aruco/aruco-Testdata/testdata/single/video.avi", true);
   m_VideoSource->SetVideoCameraInput(0);
   m_VideoSource->StartCapturing();
 
@@ -227,16 +204,6 @@ void ArucoTestView::Start()
   //Configure other parameters
   if (ThePyrDownLevel>0)
     MDetector.pyrDown(ThePyrDownLevel);
-
-  //Create gui
-//  cv::namedWindow("thres",1);
-//  cv::namedWindow("in",1);
-//  MDetector.getThresholdParams( ThresParam1,ThresParam2);
-//  MDetector.setCornerRefinementMethod(MarkerDetector::LINES);
-//  iThresParam1=ThresParam1;
-//  iThresParam2=ThresParam2;
-//  cv::createTrackbar("ThresParam1", "in",&iThresParam1, 13, cvTackBarEvents);
-//  cv::createTrackbar("ThresParam2", "in",&iThresParam2, 13, cvTackBarEvents);
 }
 
 void ArucoTestView::NewFrameAvailable(mitk::VideoSource*)
@@ -267,8 +234,6 @@ void ArucoTestView::NewFrameAvailable(mitk::VideoSource*)
   m.draw(TheInputImageCopy,cv::Scalar(255,0,0));
   }*/
 
-
-
   //draw a 3d cube in each marker if there is 3d info
   if (  TheCameraParameters.isValid())
     for (unsigned int i=0;i<TheMarkers.size();i++) {
@@ -284,9 +249,6 @@ void ArucoTestView::NewFrameAvailable(mitk::VideoSource*)
 
 void ArucoTestView::DoImageProcessing()
 {
-
-  //TheVideoCapturer.open("http://192.168.2.106:80/video.cgi?resolution=640x480&.mjpg");
-//    TheVideoCapturer.open("D:/Home/ivo/Vorlesungen/MBV/Allgemein/Uebungen/P-Aruco/aruco-Testdata/testdata/single/video.avi");
     TheVideoCapturer.open(0);
 
         //check video is open
@@ -307,16 +269,15 @@ void ArucoTestView::DoImageProcessing()
         if (ThePyrDownLevel>0)
             MDetector.pyrDown(ThePyrDownLevel);
 
-
         //Create gui
-//        cv::namedWindow("thres",1);
-//        cv::namedWindow("in",1);
-//        MDetector.getThresholdParams( ThresParam1,ThresParam2);
-//        MDetector.setCornerRefinementMethod(MarkerDetector::LINES);
-//        iThresParam1=ThresParam1;
-//        iThresParam2=ThresParam2;
-//        cv::createTrackbar("ThresParam1", "in",&iThresParam1, 13, cvTackBarEvents);
-//        cv::createTrackbar("ThresParam2", "in",&iThresParam2, 13, cvTackBarEvents);
+        cv::namedWindow("thres",1);
+        cv::namedWindow("in",1);
+        MDetector.getThresholdParams( ThresParam1,ThresParam2);
+        MDetector.setCornerRefinementMethod(MarkerDetector::LINES);
+        iThresParam1=ThresParam1;
+        iThresParam2=ThresParam2;
+        cv::createTrackbar("ThresParam1", "in",&iThresParam1, 13, cvTackBarEvents);
+        cv::createTrackbar("ThresParam2", "in",&iThresParam2, 13, cvTackBarEvents);
 
         char key=0;
         int index=0;
@@ -349,8 +310,6 @@ void ArucoTestView::DoImageProcessing()
                 m.draw(TheInputImageCopy,cv::Scalar(255,0,0));
             }*/
 
-
-
             //draw a 3d cube in each marker if there is 3d info
             if (  TheCameraParameters.isValid())
                 for (unsigned int i=0;i<TheMarkers.size();i++) {
@@ -363,44 +322,6 @@ void ArucoTestView::DoImageProcessing()
             cv::imshow("in",TheInputImageCopy);
             cv::imshow("thres",MDetector.getThresholdedImage());
         }
-
-  //QList<mitk::DataNode::Pointer> nodes = this->GetDataManagerSelection();
-  //if (nodes.empty()) return;
-
-  //mitk::DataNode* node = nodes.front();
-
-  //if (!node)
-  //{
-  //  // Nothing selected. Inform the user and return
-  //  QMessageBox::information( NULL, "Template", "Please load and select an image before starting image processing.");
-  //  return;
-  //}
-
-  //// here we have a valid mitk::DataNode
-
-  //// a node itself is not very useful, we need its data item (the image)
-  //mitk::BaseData* data = node->GetData();
-  //if (data)
-  //{
-  //  // test if this data item is an image or not (could also be a surface or something totally different)
-  //  mitk::Image* image = dynamic_cast<mitk::Image*>( data );
-  //  if (image)
-  //  {
-  //    std::stringstream message;
-  //    std::string name;
-  //    message << "Performing image processing for image ";
-  //    if (node->GetName(name))
-  //    {
-  //      // a property called "name" was found for this DataNode
-  //      message << "'" << name << "'";
-  //    }
-  //    message << ".";
-  //    MITK_INFO << message.str();
-
-  //    // actually do something here...
-
-  //  }
-  //}
 }
 
 void cvTackBarEvents(int pos,void*)
@@ -411,7 +332,7 @@ void cvTackBarEvents(int pos,void*)
     ThresParam1=iThresParam1;
     ThresParam2=iThresParam2;
     MDetector.setThresholdParams(ThresParam1,ThresParam2);
-//recompute
+    //recompute
     MDetector.detect(TheInputImage,TheMarkers,TheCameraParameters);
     TheInputImage.copyTo(TheInputImageCopy);
     for (unsigned int i=0;i<TheMarkers.size();i++)	TheMarkers[i].draw(TheInputImageCopy,Scalar(0,0,255),1);
