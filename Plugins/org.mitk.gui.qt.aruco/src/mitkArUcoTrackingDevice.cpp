@@ -107,6 +107,8 @@ mitk::TrackingTool* mitk::ArUcoTrackingDevice::GetTool(unsigned int toolNumber) 
     return this->m_AllTools[toolNumber];
 }
 
+//brauche hier einen setter für m_VideoSource und setze es dann auf den m_VideoSource aus
+//der ArucoTestView somit benutzen alle den selben m_VideoSource
 
 bool mitk::ArUcoTrackingDevice::OpenConnection()
 {
