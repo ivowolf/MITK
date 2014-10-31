@@ -420,6 +420,10 @@ void QmitkIGTTrackingLabView::OnPermanentRegistration(bool on)
       m_PermanentRegistrationFilter->SetInput(1,this->m_ObjectmarkerNavigationData);
       m_PermanentRegistrationFilter->SetRepresentationObject(1,imageNode->GetData());
 
+      //von dem ImageNode kann ich mir die Axial-Schicht ziehen und diese als neuen
+      //2D Node laden und das alte Bild einfach als helper Node laden. An dieser Stelle
+      //im Code einfügen oder neu machen da alte Funktion nicht mehr funktionieren wird ?!
+
       //for the image we can't use NavigationData objects as transforms because an image needs additional geometry information, e.g., spacing
       //thus we use mitk::AffineTransform3D objects
 
