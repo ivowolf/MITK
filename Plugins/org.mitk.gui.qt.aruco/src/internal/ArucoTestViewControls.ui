@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>222</width>
-    <height>171</height>
+    <width>176</width>
+    <height>209</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -61,6 +61,16 @@
      </property>
      <property name="text">
       <string>Slice it!</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout"/>
+   </item>
+   <item>
+    <widget class="QCheckBox" name="boxSlicing">
+     <property name="text">
+      <string>Permanent Slicing</string>
      </property>
     </widget>
    </item>

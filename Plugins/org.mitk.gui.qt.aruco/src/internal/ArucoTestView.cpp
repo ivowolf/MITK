@@ -88,11 +88,17 @@ void ArucoTestView::CreateQtPartControl( QWidget *parent )
   connect( m_Controls.buttonPerformImageProcessing, SIGNAL(clicked()), this, SLOT(DoImageProcessing()) );
   connect( m_Controls.buttonStart, SIGNAL(clicked()), this, SLOT(Start()) );
   connect( m_Controls.btnSlice, SIGNAL(clicked()), this, SLOT(GetSliceFromMarkerPosition()) );
+  connect( m_Controls.boxSlicing, SIGNAL(toggled(bool)), this, SLOT(SetPermanentSlicing(bool)));
 
   // retrieve old preferences
   m_VideoSource = mitk::OpenCVVideoSource::New();
   m_VideoBackground = new QmitkVideoBackground(m_VideoSource);
   m_VideoBackground->setParent(parent);
+}
+
+void ArucoTestView::SetPermanentSlicing(bool slicing)
+{
+  m_Slicing = slicing;
 }
 
 void ArucoTestView::OnSelectionChanged( berry::IWorkbenchPart::Pointer /*source*/,
@@ -186,6 +192,12 @@ void ArucoTestView::OnTimer()
   //new NavigationData is available. If we have a new NavigationData the cone position and orientation
   //will be adapted.
   m_Visualizer->Update();
+
+  if(m_Slicing)
+  {
+    this->GetSliceFromMarkerPosition();
+  }
+
   mitk::RenderingManager::GetInstance()->RequestUpdateAll();  //update the render windows
 }
 

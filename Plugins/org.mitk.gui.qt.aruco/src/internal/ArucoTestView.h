@@ -62,6 +62,8 @@ class ArucoTestView : public QmitkAbstractView
 
     void GetSliceFromMarkerPosition();
 
+    void SetPermanentSlicing(bool);
+
   protected:
 
     virtual void SetFocus();
@@ -108,6 +110,8 @@ class ArucoTestView : public QmitkAbstractView
   private:
 
     mitk::DataNode::Pointer m_SelectedImageNode;
+
+    bool m_Slicing = false;
 
 };
 
