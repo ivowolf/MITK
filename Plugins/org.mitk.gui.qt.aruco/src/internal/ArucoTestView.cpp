@@ -30,8 +30,10 @@ PURPOSE.  See the above copyright notices for more information.
 
 #include <mitkNavigationTool.h>
 #include <mitkDataNode.h>
+#include <mitkImage.h>
 #include <mitkSurface.h>
 #include <mitkCone.h>
+#include <mitkExtractSliceFilter.h>
 
 #include "cvdrawingutils.h"
 
@@ -42,18 +44,18 @@ string TheInputVideo;
 string TheIntrinsicFile;
 float TheMarkerSize=-1;
 int ThePyrDownLevel;
-Mat TheInputImageCopy;
-MarkerDetector MDetector;
-VideoCapture TheVideoCapturer;
-vector<Marker> TheMarkers;
-CameraParameters TheCameraParameters;
-void cvTackBarEvents(int pos,void*);
+cv::Mat TheInputImageCopy;
+aruco::MarkerDetector MDetector;
+cv::VideoCapture TheVideoCapturer;
+vector<aruco::Marker> TheMarkers;
+aruco::CameraParameters TheCameraParameters;
 
 pair<double,double> AvrgTime(0,0) ;//determines the average time required for detection
 double ThresParam1,ThresParam2;
 int iThresParam1,iThresParam2;
 
-Mat TheInputImage;
+cv::Mat TheInputImage;
+void cvTackBarEvents(int pos,void*);
 
 const std::string ArucoTestView::VIEW_ID = "org.mitk.views.arucotestview";
 
@@ -63,6 +65,7 @@ ArucoTestView::ArucoTestView()
   m_TrackingDeviceSource = mitk::TrackingDeviceSource::New();
   m_ArUcoTrackingDevice = mitk::ArUcoTrackingDevice::New();
   m_ToolStorage = mitk::NavigationToolStorage::New();
+  m_SelectedImageNode = mitk::DataNode::New();
 }
 
 ArucoTestView::~ArucoTestView()
@@ -80,11 +83,11 @@ void ArucoTestView::SetFocus()
 
 void ArucoTestView::CreateQtPartControl( QWidget *parent )
 {
-  // create GUI widgets from the Qt Designer's .ui file
   m_Controls.setupUi( parent );
   connect( m_Controls.buttonSetupTracker, SIGNAL(clicked()), this, SLOT(SetupArUcoTracker()) );
   connect( m_Controls.buttonPerformImageProcessing, SIGNAL(clicked()), this, SLOT(DoImageProcessing()) );
   connect( m_Controls.buttonStart, SIGNAL(clicked()), this, SLOT(Start()) );
+  connect( m_Controls.btnSlice, SIGNAL(clicked()), this, SLOT(GetSliceFromMarkerPosition()) );
 
   // retrieve old preferences
   m_VideoSource = mitk::OpenCVVideoSource::New();
@@ -95,6 +98,17 @@ void ArucoTestView::CreateQtPartControl( QWidget *parent )
 void ArucoTestView::OnSelectionChanged( berry::IWorkbenchPart::Pointer /*source*/,
                                              const QList<mitk::DataNode::Pointer>& nodes )
 {
+  foreach( mitk::DataNode::Pointer node, nodes )
+  {
+    if( node.IsNotNull() && dynamic_cast<mitk::Image*>(node->GetData()) )
+    {
+      m_Controls.btnSlice->setEnabled( true );
+      m_SelectedImageNode = node;
+      return;
+    }
+  }
+
+  m_Controls.btnSlice->setEnabled( false );
 }
 
 void ArucoTestView::SetupArUcoTracker()
@@ -322,6 +336,52 @@ void ArucoTestView::DoImageProcessing()
             cv::imshow("in",TheInputImageCopy);
             cv::imshow("thres",MDetector.getThresholdedImage());
         }
+}
+
+void ArucoTestView::GetSliceFromMarkerPosition()
+{
+  // disables the 3D view for the ct image, because we need it for our
+  // sliced plane which will only be visible in the 3D view?
+//  m_SelectedImageNode->SetVisibility(false, mitk::BaseRenderer::GetInstance
+//          ( mitk::BaseRenderer::GetRenderWindowByName("stdmulti.widget4")));
+  m_SelectedImageNode->SetVisibility(false);
+
+  mitk::Image::Pointer image = dynamic_cast<mitk::Image*>(m_SelectedImageNode->GetData());
+  mitk::ExtractSliceFilter::Pointer sliceFilter = mitk::ExtractSliceFilter::New();
+
+//  mitk::PlaneGeometry::Pointer planeGeometry = mitk::PlaneGeometry::New();
+//  planeGeometry->SetImageGeometry(image);
+
+  QmitkRenderWindow* renderWindow = this->GetRenderWindowPart()->GetQmitkRenderWindow("axial");
+//  unsigned int pos = renderWindow->GetSliceNavigationController()->GetSlice()->GetPos();
+  mitk::PlaneGeometry::ConstPointer geometry = renderWindow->GetSliceNavigationController()->GetCurrentPlaneGeometry();
+
+//  mitk::SliceNavigationController::Pointer controller = mitk::SliceNavigationController::New();
+//  controller->SetInputWorldGeometry(image->GetGeometry());
+//  controller->SetViewDirection(mitk::SliceNavigationController::Axial);
+//  controller->Update();
+//  controller->GetSlice()->SetPos(pos);
+
+//  image->GetSlicedGeometry()->GetPlaneGeometry();
+
+//  mitk::BaseRenderer::GetRenderWindowByName("stdmulti.widget1");
+
+  sliceFilter->SetInput(image);
+  sliceFilter->SetWorldGeometry(geometry);
+  sliceFilter->Update();
+
+  mitk::Image::Pointer imageSlice = sliceFilter->GetOutput();
+
+  mitk::DataNode::Pointer slice = mitk::DataNode::New();
+  slice->SetData(imageSlice);
+  slice->SetName("Tracked Slice");
+  slice->SetVisibility(true, mitk::BaseRenderer::GetInstance
+          ( mitk::BaseRenderer::GetRenderWindowByName("stdmulti.widget1")));
+  slice->SetVisibility(true, mitk::BaseRenderer::GetInstance
+          ( mitk::BaseRenderer::GetRenderWindowByName("stdmulti.widget4")));
+  this->GetDataStorage()->Add(slice);
+
+  mitk::RenderingManager::GetInstance()->RequestUpdateAll();
 }
 
 void cvTackBarEvents(int pos,void*)

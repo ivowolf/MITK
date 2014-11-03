@@ -55,6 +55,16 @@
     </widget>
    </item>
    <item>
+    <widget class="QPushButton" name="btnSlice">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="text">
+      <string>Slice it!</string>
+     </property>
+    </widget>
+   </item>
+   <item>
     <spacer name="spacer1">
      <property name="orientation">
       <enum>Qt::Vertical</enum>

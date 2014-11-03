@@ -5,7 +5,7 @@
     <view id="org.mitk.views.arucotestview"
           name="Aruco Test View"
           class="ArucoTestView"
-          icon="resources/icon.xpm" />
+          icon="resources/icon.jpg" />
   </extension>
 
 </plugin>

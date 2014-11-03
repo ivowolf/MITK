@@ -60,6 +60,8 @@ class ArucoTestView : public QmitkAbstractView
 
     void NewFrameAvailable(mitk::VideoSource*);
 
+    void GetSliceFromMarkerPosition();
+
   protected:
 
     virtual void SetFocus();
@@ -102,6 +104,11 @@ class ArucoTestView : public QmitkAbstractView
     mitk::NavigationDataObjectVisualizationFilter::Pointer m_Visualizer;
 
     QTimer* m_Timer;
+
+  private:
+
+    mitk::DataNode::Pointer m_SelectedImageNode;
+
 };
 
 #endif // ArucoTestView_h
