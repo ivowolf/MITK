@@ -46,6 +46,8 @@ namespace mitk
     mitkClassMacro(ArUcoTrackingDevice, TrackingDevice);
     itkNewMacro(Self);
 
+    void setVideoSource(mitk::OpenCVVideoSource::Pointer source);
+
     /**
     * \brief Starts the tracking.
     * \return Returns true if the tracking is started. Returns false if there was an error.

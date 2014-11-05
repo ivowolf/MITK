@@ -94,6 +94,9 @@ void ArucoTestView::CreateQtPartControl( QWidget *parent )
   m_VideoSource = mitk::OpenCVVideoSource::New();
   m_VideoBackground = new QmitkVideoBackground(m_VideoSource);
   m_VideoBackground->setParent(parent);
+
+  m_VideoSource->SetVideoCameraInput(0);
+  m_ArUcoTrackingDevice->setVideoSource(m_VideoSource);
 }
 
 void ArucoTestView::SetPermanentSlicing(bool slicing)
@@ -203,7 +206,8 @@ void ArucoTestView::OnTimer()
 
 void ArucoTestView::Start()
 {
-  m_VideoSource->SetVideoCameraInput(0);
+//  m_VideoSource->SetVideoCameraInput(0);
+//  m_ArUcoTrackingDevice->setVideoSource(m_VideoSource);
   m_VideoSource->StartCapturing();
 
   int hertz = 200;//m_Controls->UpdateRate->text().toInt();

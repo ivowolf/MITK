@@ -110,11 +110,16 @@ mitk::TrackingTool* mitk::ArUcoTrackingDevice::GetTool(unsigned int toolNumber) 
 //brauche hier einen setter für m_VideoSource und setze es dann auf den m_VideoSource aus
 //der ArucoTestView somit benutzen alle den selben m_VideoSource
 
+void mitk::ArUcoTrackingDevice::setVideoSource(mitk::OpenCVVideoSource::Pointer source)
+{
+    this->m_VideoSource = source;
+}
+
 bool mitk::ArUcoTrackingDevice::OpenConnection()
 {
   try {
     m_FirstGrabAfterOpening = true;
-    m_VideoSource->SetVideoCameraInput(0);
+//    m_VideoSource->SetVideoCameraInput(0); //vor Methodenaufruf muss unbedingt die VideoSource gesetzt werden!
     m_CameraParameters.readFromXMLFile("/home/riecker/Development/src/Seminar/Plugins/org.mitk.gui.qt.aruco/out_camera_data.xml");
     m_MarkerSize = 4;
     this->SetState(Ready);
