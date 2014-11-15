@@ -110,6 +110,7 @@ class ArucoTestView : public QmitkAbstractView
   private:
 
     mitk::DataNode::Pointer m_SelectedImageNode;
+    mitk::DataNode::Pointer m_SlicedImage;
 
     bool m_Slicing = false;
 

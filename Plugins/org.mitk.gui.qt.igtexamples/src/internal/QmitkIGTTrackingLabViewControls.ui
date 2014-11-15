@@ -36,8 +36,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>345</width>
-        <height>860</height>
+        <width>387</width>
+        <height>882</height>
        </rect>
       </property>
       <attribute name="label">
@@ -156,7 +156,7 @@
             <item>
              <widget class="QCheckBox" name="m_SurfaceActive">
               <property name="enabled">
-               <bool>false</bool>
+               <bool>true</bool>
               </property>
               <property name="text">
                <string/>
@@ -251,8 +251,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>342</width>
-        <height>881</height>
+        <width>346</width>
+        <height>895</height>
        </rect>
       </property>
       <attribute name="label">
@@ -269,8 +269,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>342</width>
-        <height>881</height>
+        <width>346</width>
+        <height>895</height>
        </rect>
       </property>
       <attribute name="label">
@@ -304,8 +304,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>342</width>
-        <height>881</height>
+        <width>346</width>
+        <height>895</height>
        </rect>
       </property>
       <attribute name="label">
@@ -390,8 +390,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>342</width>
-        <height>881</height>
+        <width>347</width>
+        <height>882</height>
        </rect>
       </property>
       <attribute name="label">

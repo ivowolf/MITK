@@ -205,6 +205,11 @@ void QmitkIGTTrackingLabView::OnInitialRegistration()
   mitk::PointSet::Pointer imageFiducials = dynamic_cast<mitk::PointSet*>(m_ImageFiducialsDataNode->GetData());
   mitk::PointSet::Pointer trackerFiducials = dynamic_cast<mitk::PointSet*>(m_TrackerFiducialsDataNode->GetData());
 
+  mitk::Surface::Pointer surface = mitk::Surface::New();
+  mitk::DataNode::Pointer surfaceNode = mitk::DataNode::New();
+  surfaceNode->SetData(surface);
+  ds->Add(surfaceNode);
+
   //############### conversion to vtk data types (we will use the vtk landmark based transform) ##########################
   //convert point sets to vtk poly data
   vtkSmartPointer<vtkPoints> sourcePoints = vtkSmartPointer<vtkPoints>::New();
@@ -380,7 +385,8 @@ void QmitkIGTTrackingLabView::OnPermanentRegistration(bool on)
     }
 
     //remember initial object transform to calculate the object to marker transform later on and convert it to navigation data
-    mitk::AffineTransform3D::Pointer transform = this->m_Controls.m_ObjectComboBox->GetSelectedNode()->GetData()->GetGeometry()->GetIndexToWorldTransform();
+//    mitk::AffineTransform3D::Pointer transform = this->m_Controls.m_ObjectComboBox->GetSelectedNode()->GetData()->GetGeometry()->GetIndexToWorldTransform();
+    mitk::AffineTransform3D::Pointer transform = this->m_Controls.m_ImageComboBox->GetSelectedNode()->GetData()->GetGeometry()->GetIndexToWorldTransform();
     mitk::NavigationData::Pointer T_Object = mitk::NavigationData::New(transform,false); //TODO: catch exception during conversion?
 
     //then reset the transform because we will now start to calculate the permanent registration

@@ -46,6 +46,9 @@ float TheMarkerSize=-1;
 int ThePyrDownLevel;
 cv::Mat TheInputImageCopy;
 aruco::MarkerDetector MDetector;
+
+aruco::BoardDetector BDetector;
+
 cv::VideoCapture TheVideoCapturer;
 vector<aruco::Marker> TheMarkers;
 aruco::CameraParameters TheCameraParameters;
@@ -66,6 +69,12 @@ ArucoTestView::ArucoTestView()
   m_ArUcoTrackingDevice = mitk::ArUcoTrackingDevice::New();
   m_ToolStorage = mitk::NavigationToolStorage::New();
   m_SelectedImageNode = mitk::DataNode::New();
+  m_SlicedImage = mitk::DataNode::New();
+  m_SlicedImage->SetName("SlicedImage");
+  m_SlicedImage->SetVisibility(true, mitk::BaseRenderer::GetInstance
+          ( mitk::BaseRenderer::GetRenderWindowByName("stdmulti.widget1")));
+  m_SlicedImage->SetVisibility(true, mitk::BaseRenderer::GetInstance
+          ( mitk::BaseRenderer::GetRenderWindowByName("stdmulti.widget4")));
 }
 
 ArucoTestView::~ArucoTestView()
@@ -125,6 +134,8 @@ void ArucoTestView::SetupArUcoTracker()
   m_TrackingDeviceSource->SetTrackingDevice(m_ArUcoTrackingDevice);
   m_TrackingDeviceSource->RegisterAsMicroservice();
   m_ToolStorage->RegisterAsMicroservice(m_TrackingDeviceSource->GetMicroserviceID());
+
+  this->GetDataStorage()->Add(m_SlicedImage);
 
   mitk::NavigationTool::Pointer navigationTool = mitk::NavigationTool::New();
   navigationTool->SetTrackingTool(m_ArUcoTrackingDevice->GetTool(0));
@@ -234,29 +245,33 @@ void ArucoTestView::Start()
   //Configure other parameters
   if (ThePyrDownLevel>0)
     MDetector.pyrDown(ThePyrDownLevel);
+
+  MDetector.detect(m_VideoSource->GetImage(), TheMarkers, TheCameraParameters, TheMarkerSize);
+  for (unsigned int i=0;i<TheMarkers.size();i++) {
+    TheMarkers[i].draw(m_VideoSource->GetImage(),Scalar(0,0,255),1);
+  }
 }
 
 void ArucoTestView::NewFrameAvailable(mitk::VideoSource*)
 {
-  int index=0;
   TheInputImage = m_VideoSource->GetImage();
   //TheVideoCapturer.retrieve( TheInputImage);
   //copy image
 
-  index++; //number of images captured
-  double tick = (double)getTickCount();//for checking the speed
+//  double tick = (double)getTickCount();//for checking the speed
+
   //Detection of markers in the image passed
   MDetector.detect(TheInputImage,TheMarkers,TheCameraParameters,TheMarkerSize);
-  //chekc the speed by calculating the mean speed of all iterations
-  AvrgTime.first+=((double)getTickCount()-tick)/getTickFrequency();
-  AvrgTime.second++;
-  cout<<"Time detection="<<1000*AvrgTime.first/AvrgTime.second<<" milliseconds"<<endl;
 
-  //print marker info and draw the markers in image
+  //check the speed by calculating the mean speed of all iterations
+//  AvrgTime.first+=((double)getTickCount()-tick)/getTickFrequency();
+//  AvrgTime.second++;
+//  cout<<"Time detection="<<1000*AvrgTime.first/AvrgTime.second<<" milliseconds"<<endl;
+
   TheInputImage.copyTo(TheInputImageCopy);
   for (unsigned int i=0;i<TheMarkers.size();i++) {
     cout<<"MARKER-NR:"<<TheMarkers[i]<<endl;
-    TheMarkers[i].draw(TheInputImageCopy,Scalar(0,0,255),1);
+//    TheMarkers[i].draw(TheInputImageCopy,Scalar(0,0,255),1);
   }
   //print other rectangles that contains no valid markers
   /**     for (unsigned int i=0;i<MDetector.getCandidates().size();i++) {
@@ -264,15 +279,12 @@ void ArucoTestView::NewFrameAvailable(mitk::VideoSource*)
   m.draw(TheInputImageCopy,cv::Scalar(255,0,0));
   }*/
 
-  //draw a 3d cube in each marker if there is 3d info
-  if (  TheCameraParameters.isValid())
-    for (unsigned int i=0;i<TheMarkers.size();i++) {
-      CvDrawingUtils::draw3dCube(TheInputImageCopy,TheMarkers[i],TheCameraParameters);
-      CvDrawingUtils::draw3dAxis(TheInputImageCopy,TheMarkers[i],TheCameraParameters);
-    }
-    //DONE! Easy, right?
-    cout<<endl<<endl<<endl;
-    //show input with augmented information and  the thresholded image
+//  if (  TheCameraParameters.isValid())
+//    for (unsigned int i=0;i<TheMarkers.size();i++) {
+//      CvDrawingUtils::draw3dCube(TheInputImageCopy,TheMarkers[i],TheCameraParameters);
+//      CvDrawingUtils::draw3dAxis(TheInputImageCopy,TheMarkers[i],TheCameraParameters);
+//    }
+    cout<<endl<<endl;
 //    cv::imshow("in",TheInputImageCopy);
 //    cv::imshow("thres",MDetector.getThresholdedImage());
 }
@@ -388,14 +400,16 @@ void ArucoTestView::GetSliceFromMarkerPosition()
 
   mitk::Image::Pointer imageSlice = sliceFilter->GetOutput();
 
-  mitk::DataNode::Pointer slice = mitk::DataNode::New();
-  slice->SetData(imageSlice);
-  slice->SetName("Tracked Slice");
-  slice->SetVisibility(true, mitk::BaseRenderer::GetInstance
-          ( mitk::BaseRenderer::GetRenderWindowByName("stdmulti.widget1")));
-  slice->SetVisibility(true, mitk::BaseRenderer::GetInstance
-          ( mitk::BaseRenderer::GetRenderWindowByName("stdmulti.widget4")));
-  this->GetDataStorage()->Add(slice);
+  m_SlicedImage->SetData(imageSlice);
+
+//  mitk::DataNode::Pointer slice = mitk::DataNode::New();
+//  slice->SetData(imageSlice);
+//  slice->SetName("Tracked Slice");
+//  slice->SetVisibility(true, mitk::BaseRenderer::GetInstance
+//          ( mitk::BaseRenderer::GetRenderWindowByName("stdmulti.widget1")));
+//  slice->SetVisibility(true, mitk::BaseRenderer::GetInstance
+//          ( mitk::BaseRenderer::GetRenderWindowByName("stdmulti.widget4")));
+//  this->GetDataStorage()->Add(slice);
 
   mitk::RenderingManager::GetInstance()->RequestUpdateAll();
 }
