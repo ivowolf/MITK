@@ -247,8 +247,9 @@ void ArucoTestView::Start()
     MDetector.pyrDown(ThePyrDownLevel);
 
   MDetector.detect(m_VideoSource->GetImage(), TheMarkers, TheCameraParameters, TheMarkerSize);
+  TheInputImage = m_VideoSource->GetImage();
   for (unsigned int i=0;i<TheMarkers.size();i++) {
-    TheMarkers[i].draw(m_VideoSource->GetImage(),Scalar(0,0,255),1);
+    TheMarkers[i].draw(TheInputImage,Scalar(0,0,255),1);
   }
 }
 
@@ -279,19 +280,19 @@ void ArucoTestView::NewFrameAvailable(mitk::VideoSource*)
   m.draw(TheInputImageCopy,cv::Scalar(255,0,0));
   }*/
 
-//  if (  TheCameraParameters.isValid())
+  if (  TheCameraParameters.isValid())
 //    for (unsigned int i=0;i<TheMarkers.size();i++) {
 //      CvDrawingUtils::draw3dCube(TheInputImageCopy,TheMarkers[i],TheCameraParameters);
 //      CvDrawingUtils::draw3dAxis(TheInputImageCopy,TheMarkers[i],TheCameraParameters);
 //    }
     cout<<endl<<endl;
-//    cv::imshow("in",TheInputImageCopy);
+    cv::imshow("in",TheInputImageCopy);
 //    cv::imshow("thres",MDetector.getThresholdedImage());
 }
 
 void ArucoTestView::DoImageProcessing()
 {
-    TheVideoCapturer.open(0);
+    TheVideoCapturer.open(-1);
 
         //check video is open
         if (!TheVideoCapturer.isOpened()) {
