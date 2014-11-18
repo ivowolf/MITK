@@ -253,6 +253,9 @@ void ArucoTestView::Start()
   }
 }
 
+BoardConfiguration BC;
+CameraParameters CP;
+
 void ArucoTestView::NewFrameAvailable(mitk::VideoSource*)
 {
   TheInputImage = m_VideoSource->GetImage();
@@ -263,6 +266,24 @@ void ArucoTestView::NewFrameAvailable(mitk::VideoSource*)
 
   //Detection of markers in the image passed
   MDetector.detect(TheInputImage,TheMarkers,TheCameraParameters,TheMarkerSize);
+
+
+  //! Board Detection from here
+
+  BC.readFromFile("/home/riecker/Downloads/aruco_testproject/TestData/chessboardinfo_pix.yml");
+  CP.readFromXMLFile("/home/riecker/Downloads/aruco_testproject/TestData/out_camera_data.xml");
+
+  BDetector.setParams(BC,CP,100);
+  BDetector.detect(TheInputImage);
+  Board b = BDetector.getDetectedBoard();
+
+  if(!b.empty())
+  {
+      double position[3];
+      double orientation[4];
+      b.OgreGetPoseParameters(position,orientation);
+      cout << "Position: " << position[0] << " - " << position[1] << " - " << position[2] << endl;
+  }
 
   //check the speed by calculating the mean speed of all iterations
 //  AvrgTime.first+=((double)getTickCount()-tick)/getTickFrequency();
