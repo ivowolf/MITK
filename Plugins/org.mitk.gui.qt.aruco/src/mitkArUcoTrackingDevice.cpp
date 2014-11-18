@@ -188,15 +188,31 @@ void mitk::ArUcoTrackingDevice::TrackTools()
         std::cout << markers.size() << std::endl;
         if(markers.size()>0)
         {
-          double position[3];
-          double orientation[4];
-          markers.begin()->OgreGetPoseParameters( position, orientation );
-          mitk::Point3D mitkpoint;
-          mitk::FillVector3D(mitkpoint, position[0], position[1], position[2]);
-          this->m_AllTools[0]->SetPosition(mitkpoint);
-          mitk::Quaternion mitkorientation(orientation[0], orientation[1], orientation[2], orientation[3]);
-          this->m_AllTools[0]->SetOrientation(mitkorientation);
-          this->m_AllTools[0]->SetDataValid(true);
+          for(int i=0; i< markers.size(); ++i)
+          {
+              aruco::Marker marker = markers.at(i);
+              cout << "Marker id: " << marker.id << endl;
+              //! Als Tracking Marker wird nur noch der Marker mit der ID 900 genommen,
+              //! damit es nicht zum Chaos kommt mit den Markern vom Board beim
+              //! kalibrieren der Sonde
+              if(marker.id == 900)
+              {
+                double position[3];
+                double orientation[4];
+                //hier kommen 3D koordinaten von der ogre methode ?! funktioniert nur für marker ?
+                markers.begin()->OgreGetPoseParameters( position, orientation );
+                cout << "Position: " << position[0] << " - " << position[1] << " - " << position[2] << endl;
+                cout << "Orientation: " << orientation[0] << " - " << orientation[1] << " - " << orientation[2] << " - " << orientation[3] << endl;
+                mitk::Point3D mitkpoint;
+                cout << "Point: " << mitkpoint[0] << " - " << mitkpoint[1] << " - " << mitkpoint[2] << endl;
+                mitk::FillVector3D(mitkpoint, position[0], position[1], position[2]);
+                this->m_AllTools[0]->SetPosition(mitkpoint);
+                mitk::Quaternion mitkorientation(orientation[0], orientation[1], orientation[2], orientation[3]);
+                this->m_AllTools[0]->SetOrientation(mitkorientation);
+                this->m_AllTools[0]->SetDataValid(true);
+              }
+          }
+
         }
         //print marker info and draw the markers in image
        // grabbedImage.copyTo(grabbedImageCopy);
