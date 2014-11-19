@@ -1,0 +1,13 @@
+SET(H_FILES
+Datastructure/mitkMeasurementsPoints.h
+Datastructure/mitkMeasurementsPoint.h
+Datastructure/mitkChessboardPoints.h
+CalibrationController/mitkEndoscopyController.h
+
+)
+SET(CPP_FILES
+Datastructure/mitkMeasurementsPoints.cpp
+Datastructure/mitkMeasurementsPoint.cpp
+Datastructure/mitkChessboardPoints.cpp
+CalibrationController/mitkEndoscopyController.cpp
+)

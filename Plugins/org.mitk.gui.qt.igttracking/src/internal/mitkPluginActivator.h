@@ -30,9 +30,10 @@ class PluginActivator :
 
 public:
 
+
   void start(ctkPluginContext* context);
   void stop(ctkPluginContext* context);
-
+private:
 }; // PluginActivator
 
 }

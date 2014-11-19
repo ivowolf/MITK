@@ -16,7 +16,7 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 #ifndef MITKCLARONINTERFACE_H_HEADER_INCLUDED_
 #define MITKCLARONINTERFACE_H_HEADER_INCLUDED_
-#define MTC(func) {int r = func; if (r!=mtOK) printf("MTC error: %s\n",MTLastErrorString()); };
+#define MTC(func) {int r = func; /*if (r!=mtOK) printf("MTC error: %s\n",MTLastErrorString());*/ };
 
 #include <vector>
 #include <string>
@@ -28,7 +28,7 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include <itkObjectFactory.h>
 
 #ifdef _WIN64  //Defined for applications for Win64.
-typedef long mtHandle;
+typedef long long mtHandle;
 #else
 typedef int mtHandle;
 #endif

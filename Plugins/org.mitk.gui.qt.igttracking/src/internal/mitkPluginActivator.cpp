@@ -34,13 +34,13 @@ void PluginActivator::start(ctkPluginContext* context)
   mitk::PersistenceService::LoadModule(); //Workaround for bug in persistence module (see bug 16643 for details)
                                           //CAN BE REMOVED WHEN THE BUG IS FIXED
 
-
   BERRY_REGISTER_EXTENSION_CLASS(QmitkMITKIGTNavigationToolManagerView, context)
   BERRY_REGISTER_EXTENSION_CLASS( QmitkMITKIGTTrackingToolboxView , context)
   BERRY_REGISTER_EXTENSION_CLASS( QmitkNavigationDataPlayerView , context)
 
 
 }
+
 
 void PluginActivator::stop(ctkPluginContext* context)
 {
