@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>176</width>
-    <height>306</height>
+    <height>344</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -94,6 +94,16 @@
     <widget class="QPushButton" name="btnCalibrate">
      <property name="text">
       <string>Calibrate probe</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="boardDetectionLabel">
+     <property name="text">
+      <string>Board Detection </string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
      </property>
     </widget>
    </item>

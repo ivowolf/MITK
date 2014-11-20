@@ -185,15 +185,17 @@ void mitk::ArUcoTrackingDevice::TrackTools()
           m_FirstGrabAfterOpening = false;
         }
 
+        m_MarkerSize = 200;
+
         vector<aruco::Marker> markers;
         m_MarkerDetector.detect(grabbedImage,markers,m_CameraParameters,m_MarkerSize);
-        std::cout << markers.size() << std::endl;
+//        std::cout << markers.size() << std::endl;
         if(markers.size()>0)
         {
           for(int i=0; i< markers.size(); ++i)
           {
               aruco::Marker marker = markers.at(i);
-              cout << "Marker id: " << marker.id << endl;
+//              cout << "Marker id: " << marker.id << endl;
               //! Als Tracking Marker wird nur noch der Marker mit der ID 900 genommen,
               //! damit es nicht zum Chaos kommt mit den Markern vom Board beim
               //! kalibrieren der Sonde
@@ -211,7 +213,9 @@ void mitk::ArUcoTrackingDevice::TrackTools()
 
                 // TODO evaluieren ob das so funktioniert
                 mitk::Vector3D offsetPosition;// = tmp + m_Offset;
-                mitk::FillVector3D(offsetPosition,mitkpoint[0]+m_Offset[0],mitkpoint[1]+m_Offset[1],mitkpoint[2]+m_Offset[2]);
+                mitkpoint[0]/=100; mitkpoint[1]/=100; mitkpoint[2]/=100;
+                mitkpoint[0]+=m_Offset[0]; mitkpoint[1]+=m_Offset[1]; mitkpoint[2]+=m_Offset[2];
+                mitk::FillVector3D(offsetPosition,mitkpoint[0],mitkpoint[1],mitkpoint[2]);
                 this->m_AllTools[0]->SetPosition(offsetPosition);
 
                 mitk::Quaternion mitkorientation(orientation[0], orientation[1], orientation[2], orientation[3]);
@@ -222,11 +226,11 @@ void mitk::ArUcoTrackingDevice::TrackTools()
 
         }
         //print marker info and draw the markers in image
-        grabbedImage.copyTo(grabbedImageCopy);
-        for (unsigned int i=0;i<markers.size();i++) {
-          cout<<markers[i]<<endl;
-          markers[i].draw(grabbedImageCopy,cv::Scalar(0,0,255),1);
-        }
+//        grabbedImage.copyTo(grabbedImageCopy);
+//        for (unsigned int i=0;i<markers.size();i++) {
+//          cout<<markers[i]<<endl;
+//          markers[i].draw(grabbedImageCopy,cv::Scalar(0,0,255),1);
+//        }
 
         //std::vector<mitk::ArUcoTool::Pointer> detectedTools = this->DetectTools();
         //std::vector<mitk::ArUcoTool::Pointer> allTools = this->GetAllTools();

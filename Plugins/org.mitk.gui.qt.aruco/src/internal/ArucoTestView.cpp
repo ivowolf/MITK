@@ -132,6 +132,7 @@ void ArucoTestView::OnSelectionChanged( berry::IWorkbenchPart::Pointer /*source*
 
 void ArucoTestView::SetupArUcoTracker()
 {
+  m_Controls.boardDetectionLabel->setStyleSheet("QLabel { background-color : red;}");
   m_TrackingDeviceSource->SetTrackingDevice(m_ArUcoTrackingDevice);
   m_TrackingDeviceSource->RegisterAsMicroservice();
   m_ToolStorage->RegisterAsMicroservice(m_TrackingDeviceSource->GetMicroserviceID());
@@ -464,14 +465,13 @@ void ArucoTestView::CalibrateProbe()
     {
         double orientation[4];
         b.OgreGetPoseParameters(boardPosTmp,orientation);
-        cout << "Position: " << boardPosTmp[0] << " - " << boardPosTmp[1] << " - " << boardPosTmp[2] << endl;
     }
     //! Board Detection until here
 
     mitk::NavigationData::Pointer navData = m_TrackingDeviceSource->GetOutput();
     mitk::Point3D probePos = navData->GetPosition();
     mitk::Point3D boardPos;
-    boardPos[0]=boardPosTmp[0]; boardPos[1]=boardPosTmp[1]; boardPos[2]=boardPosTmp[2];
+    boardPos[0]=boardPosTmp[0]/100; boardPos[1]=boardPosTmp[1]/100; boardPos[2]=boardPosTmp[2]/100;
 
     cout << "BOARD POSITION: " << boardPos[0] << " - " << boardPos[1] << " - " << boardPos[2] << endl;
     cout << "MARKER POSITION: " << probePos[0] << " - " << probePos[1] << " - " << probePos[2] << endl;
@@ -480,4 +480,16 @@ void ArucoTestView::CalibrateProbe()
     mitk::Vector3D offset = boardPos - probePos;
 
     m_ArUcoTrackingDevice->SetOffset(offset);
+
+    mitk::Point3D regisPos = navData->GetPosition();
+    cout << "PROBE POSITION: " << regisPos[0] << " - " << regisPos[1] << " - " << regisPos[2] << endl;
+    cout << "OFFSET: " << offset[0] << " - " << offset[1] << " - " << offset[2] << endl;
+
+    mitk::DataNode::Pointer testPositionNode = mitk::DataNode::New();
+    mitk::PointSet::Pointer pointSet = mitk::PointSet::New();
+    pointSet->SetPoint(0,probePos);
+    testPositionNode->SetData(pointSet);
+    testPositionNode->SetName("Real_Position");
+    this->GetDataStorage()->Add(testPositionNode);
+
 }
