@@ -132,6 +132,7 @@ void ArucoTestView::OnSelectionChanged( berry::IWorkbenchPart::Pointer /*source*
 
 void ArucoTestView::SetupArUcoTracker()
 {
+    // TODO color the label if the board is available
   m_Controls.boardDetectionLabel->setStyleSheet("QLabel { background-color : red;}");
   m_TrackingDeviceSource->SetTrackingDevice(m_ArUcoTrackingDevice);
   m_TrackingDeviceSource->RegisterAsMicroservice();
