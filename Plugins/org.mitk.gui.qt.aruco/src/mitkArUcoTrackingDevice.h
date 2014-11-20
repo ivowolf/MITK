@@ -43,10 +43,16 @@ namespace mitk
   {
   public:
 
-    mitkClassMacro(ArUcoTrackingDevice, TrackingDevice);
-    itkNewMacro(Self);
+    mitkClassMacro(ArUcoTrackingDevice, TrackingDevice)
+    itkNewMacro(Self)
 
-    void setVideoSource(mitk::OpenCVVideoSource::Pointer source);
+//    void setVideoSource(mitk::OpenCVVideoSource::Pointer source);
+
+    itkSetMacro(VideoSource, mitk::OpenCVVideoSource::Pointer)
+    itkGetMacro(VideoSource, mitk::OpenCVVideoSource::Pointer)
+
+    itkSetMacro(Offset,mitk::Vector3D)
+    itkGetMacro(Offset,mitk::Vector3D)
 
     /**
     * \brief Starts the tracking.
@@ -148,6 +154,7 @@ namespace mitk
 
     float m_MarkerSize;
     string m_ErrorMessage;
+    mitk::Vector3D m_Offset;
 
     bool m_FirstGrabAfterOpening;
   };

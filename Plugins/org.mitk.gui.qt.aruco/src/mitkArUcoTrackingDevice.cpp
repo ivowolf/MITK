@@ -33,6 +33,7 @@ mitk::ArUcoTrackingDevice::ArUcoTrackingDevice() :
   this->m_Data = DeviceDataArUcoTracker;
 
   m_VideoSource = mitk::OpenCVVideoSource::New();
+  m_Offset.Fill(0.0);
 
   //only for intial test xxx
   this->InternalAddTool(mitk::ArUcoTool::New());
@@ -110,10 +111,10 @@ mitk::TrackingTool* mitk::ArUcoTrackingDevice::GetTool(unsigned int toolNumber) 
 //brauche hier einen setter für m_VideoSource und setze es dann auf den m_VideoSource aus
 //der ArucoTestView somit benutzen alle den selben m_VideoSource
 
-void mitk::ArUcoTrackingDevice::setVideoSource(mitk::OpenCVVideoSource::Pointer source)
-{
-    this->m_VideoSource = source;
-}
+//void mitk::ArUcoTrackingDevice::setVideoSource(mitk::OpenCVVideoSource::Pointer source)
+//{
+//    this->m_VideoSource = source;
+//}
 
 bool mitk::ArUcoTrackingDevice::OpenConnection()
 {
@@ -156,6 +157,7 @@ std::vector<mitk::ArUcoTool::Pointer> mitk::ArUcoTrackingDevice::GetAllTools()
   return this->m_AllTools;
 }
 
+cv::Mat grabbedImageCopy;
 
 void mitk::ArUcoTrackingDevice::TrackTools()
 {
@@ -201,12 +203,17 @@ void mitk::ArUcoTrackingDevice::TrackTools()
                 double orientation[4];
                 //hier kommen 3D koordinaten von der ogre methode ?! funktioniert nur für marker ?
                 markers.begin()->OgreGetPoseParameters( position, orientation );
-                cout << "Position: " << position[0] << " - " << position[1] << " - " << position[2] << endl;
-                cout << "Orientation: " << orientation[0] << " - " << orientation[1] << " - " << orientation[2] << " - " << orientation[3] << endl;
+//                cout << "Position: " << position[0] << " - " << position[1] << " - " << position[2] << endl;
+//                cout << "Orientation: " << orientation[0] << " - " << orientation[1] << " - " << orientation[2] << " - " << orientation[3] << endl;
                 mitk::Point3D mitkpoint;
-                cout << "Point: " << mitkpoint[0] << " - " << mitkpoint[1] << " - " << mitkpoint[2] << endl;
+//                cout << "Point: " << mitkpoint[0] << " - " << mitkpoint[1] << " - " << mitkpoint[2] << endl;
                 mitk::FillVector3D(mitkpoint, position[0], position[1], position[2]);
-                this->m_AllTools[0]->SetPosition(mitkpoint);
+
+                // TODO evaluieren ob das so funktioniert
+                mitk::Vector3D offsetPosition;// = tmp + m_Offset;
+                mitk::FillVector3D(offsetPosition,mitkpoint[0]+m_Offset[0],mitkpoint[1]+m_Offset[1],mitkpoint[2]+m_Offset[2]);
+                this->m_AllTools[0]->SetPosition(offsetPosition);
+
                 mitk::Quaternion mitkorientation(orientation[0], orientation[1], orientation[2], orientation[3]);
                 this->m_AllTools[0]->SetOrientation(mitkorientation);
                 this->m_AllTools[0]->SetDataValid(true);
@@ -215,11 +222,11 @@ void mitk::ArUcoTrackingDevice::TrackTools()
 
         }
         //print marker info and draw the markers in image
-       // grabbedImage.copyTo(grabbedImageCopy);
-       // for (unsigned int i=0;i<markers.size();i++) {
-       //   cout<<markers[i]<<endl;
-       //   markers[i].draw(grabbedImageCopy,Scalar(0,0,255),1);
-       // }
+        grabbedImage.copyTo(grabbedImageCopy);
+        for (unsigned int i=0;i<markers.size();i++) {
+          cout<<markers[i]<<endl;
+          markers[i].draw(grabbedImageCopy,cv::Scalar(0,0,255),1);
+        }
 
         //std::vector<mitk::ArUcoTool::Pointer> detectedTools = this->DetectTools();
         //std::vector<mitk::ArUcoTool::Pointer> allTools = this->GetAllTools();

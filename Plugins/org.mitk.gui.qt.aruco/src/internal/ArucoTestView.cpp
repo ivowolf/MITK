@@ -98,6 +98,7 @@ void ArucoTestView::CreateQtPartControl( QWidget *parent )
   connect( m_Controls.buttonStart, SIGNAL(clicked()), this, SLOT(Start()) );
   connect( m_Controls.btnSlice, SIGNAL(clicked()), this, SLOT(GetSliceFromMarkerPosition()) );
   connect( m_Controls.boxSlicing, SIGNAL(toggled(bool)), this, SLOT(SetPermanentSlicing(bool)));
+  connect( m_Controls.btnCalibrate, SIGNAL(clicked()), this, SLOT(CalibrateProbe()));
 
   // retrieve old preferences
   m_VideoSource = mitk::OpenCVVideoSource::New();
@@ -105,7 +106,7 @@ void ArucoTestView::CreateQtPartControl( QWidget *parent )
   m_VideoBackground->setParent(parent);
 
   m_VideoSource->SetVideoCameraInput(0);
-  m_ArUcoTrackingDevice->setVideoSource(m_VideoSource);
+  m_ArUcoTrackingDevice->SetVideoSource(m_VideoSource);
 }
 
 void ArucoTestView::SetPermanentSlicing(bool slicing)
@@ -266,24 +267,6 @@ void ArucoTestView::NewFrameAvailable(mitk::VideoSource*)
 
   //Detection of markers in the image passed
   MDetector.detect(TheInputImage,TheMarkers,TheCameraParameters,TheMarkerSize);
-
-
-  //! Board Detection from here
-
-  BC.readFromFile("/home/riecker/Downloads/aruco_testproject/TestData/chessboardinfo_pix.yml");
-  CP.readFromXMLFile("/home/riecker/Downloads/aruco_testproject/TestData/out_camera_data.xml");
-
-  BDetector.setParams(BC,CP,100);
-  BDetector.detect(TheInputImage);
-  Board b = BDetector.getDetectedBoard();
-
-  if(!b.empty())
-  {
-      double position[3];
-      double orientation[4];
-      b.OgreGetPoseParameters(position,orientation);
-      cout << "Position: " << position[0] << " - " << position[1] << " - " << position[2] << endl;
-  }
 
   //check the speed by calculating the mean speed of all iterations
 //  AvrgTime.first+=((double)getTickCount()-tick)/getTickFrequency();
@@ -461,4 +444,40 @@ void cvTackBarEvents(int pos,void*)
 
     cv::imshow("in",TheInputImageCopy);
     cv::imshow("thres",MDetector.getThresholdedImage());
+}
+
+void ArucoTestView::CalibrateProbe()
+{
+    TheInputImage = m_VideoSource->GetImage();
+
+    //! Board Detection from here
+    BC.readFromFile("/home/riecker/Downloads/aruco_testproject/TestData/chessboardinfo_pix.yml");
+    CP.readFromXMLFile("/home/riecker/Downloads/aruco_testproject/TestData/out_camera_data.xml");
+
+    BDetector.setParams(BC,CP,100);
+    BDetector.detect(TheInputImage);
+    Board b = BDetector.getDetectedBoard();
+
+    double boardPosTmp[3];
+
+    if(!b.empty())
+    {
+        double orientation[4];
+        b.OgreGetPoseParameters(boardPosTmp,orientation);
+        cout << "Position: " << boardPosTmp[0] << " - " << boardPosTmp[1] << " - " << boardPosTmp[2] << endl;
+    }
+    //! Board Detection until here
+
+    mitk::NavigationData::Pointer navData = m_TrackingDeviceSource->GetOutput();
+    mitk::Point3D probePos = navData->GetPosition();
+    mitk::Point3D boardPos;
+    boardPos[0]=boardPosTmp[0]; boardPos[1]=boardPosTmp[1]; boardPos[2]=boardPosTmp[2];
+
+    cout << "BOARD POSITION: " << boardPos[0] << " - " << boardPos[1] << " - " << boardPos[2] << endl;
+    cout << "MARKER POSITION: " << probePos[0] << " - " << probePos[1] << " - " << probePos[2] << endl;
+
+    // TODO Evaluieren ob das Ergebnis so stimmt
+    mitk::Vector3D offset = boardPos - probePos;
+
+    m_ArUcoTrackingDevice->SetOffset(offset);
 }

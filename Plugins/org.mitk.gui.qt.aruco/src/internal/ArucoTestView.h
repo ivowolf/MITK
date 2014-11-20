@@ -64,6 +64,8 @@ class ArucoTestView : public QmitkAbstractView
 
     void SetPermanentSlicing(bool);
 
+    void CalibrateProbe();
+
   protected:
 
     virtual void SetFocus();
