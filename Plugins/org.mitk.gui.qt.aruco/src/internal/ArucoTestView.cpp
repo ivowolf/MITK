@@ -482,6 +482,8 @@ void ArucoTestView::CalibrateProbe()
 
     m_ArUcoTrackingDevice->SetOffset(offset);
 
+    //Probe Pos isn correct here need update from navData but it works fine - placed an output into
+    //the OnTimer function and its calibrated!
     mitk::Point3D regisPos = navData->GetPosition();
     cout << "PROBE POSITION: " << regisPos[0] << " - " << regisPos[1] << " - " << regisPos[2] << endl;
     cout << "OFFSET: " << offset[0] << " - " << offset[1] << " - " << offset[2] << endl;

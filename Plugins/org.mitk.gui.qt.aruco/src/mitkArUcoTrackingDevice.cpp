@@ -213,7 +213,8 @@ void mitk::ArUcoTrackingDevice::TrackTools()
 
                 // TODO evaluieren ob das so funktioniert
                 mitk::Vector3D offsetPosition;// = tmp + m_Offset;
-                mitkpoint[0]/=100; mitkpoint[1]/=100; mitkpoint[2]/=100;
+//                mitkpoint[0]/=100; mitkpoint[1]/=100; mitkpoint[2]/=100;
+                mitkpoint[0]; mitkpoint[1]; mitkpoint[2];
                 mitkpoint[0]+=m_Offset[0]; mitkpoint[1]+=m_Offset[1]; mitkpoint[2]+=m_Offset[2];
                 mitk::FillVector3D(offsetPosition,mitkpoint[0],mitkpoint[1],mitkpoint[2]);
                 this->m_AllTools[0]->SetPosition(offsetPosition);
