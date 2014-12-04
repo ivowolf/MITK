@@ -213,11 +213,21 @@ void mitk::ArUcoTrackingDevice::TrackTools()
 
                 // TODO evaluieren ob das so funktioniert
                 mitk::Vector3D offsetPosition;// = tmp + m_Offset;
-//                mitkpoint[0]/=100; mitkpoint[1]/=100; mitkpoint[2]/=100;
-                mitkpoint[0]; mitkpoint[1]; mitkpoint[2];
+                mitkpoint[0]/=20; mitkpoint[1]/=20; mitkpoint[2]/=20;
+//                mitkpoint[0]; mitkpoint[1]; mitkpoint[2];
                 mitkpoint[0]+=m_Offset[0]; mitkpoint[1]+=m_Offset[1]; mitkpoint[2]+=m_Offset[2];
                 mitk::FillVector3D(offsetPosition,mitkpoint[0],mitkpoint[1],mitkpoint[2]);
-                this->m_AllTools[0]->SetPosition(offsetPosition);
+
+                if(m_GeoSet)
+                {
+                    mitk::Point3D worldPoint;
+                    m_Geometry->IndexToWorld(offsetPosition, worldPoint);
+                    this->m_AllTools[0]->SetPosition(worldPoint);
+                }
+                else
+                {
+                    this->m_AllTools[0]->SetPosition(offsetPosition);
+                }
 
                 mitk::Quaternion mitkorientation(orientation[0], orientation[1], orientation[2], orientation[3]);
                 this->m_AllTools[0]->SetOrientation(mitkorientation);
@@ -336,5 +346,11 @@ aruco::MarkerDetector& mitk::ArUcoTrackingDevice::GetMarkerDetector()
 const aruco::MarkerDetector& mitk::ArUcoTrackingDevice::GetMarkerDetector() const
 {
   return m_MarkerDetector;
+}
+
+void mitk::ArUcoTrackingDevice::SetPointGeometry(mitk::BaseGeometry *geo)
+{
+    this->m_Geometry = geo;
+    this->m_GeoSet = true;
 }
 

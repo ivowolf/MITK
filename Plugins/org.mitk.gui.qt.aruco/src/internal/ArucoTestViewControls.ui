@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>176</width>
-    <height>344</height>
+    <height>398</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -104,6 +104,20 @@
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPushButton" name="btnSetImageGeo">
+     <property name="text">
+      <string>SetImageGeo</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPushButton" name="btnWorldToImage">
+     <property name="text">
+      <string>WorldToImage</string>
      </property>
     </widget>
    </item>

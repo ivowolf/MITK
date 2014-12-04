@@ -22,6 +22,7 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include <mitkIGTConfig.h>
 #include <mitkTrackingDevice.h>
 #include "mitkArUcoTool.h"
+#include <mitkBaseGeometry.h>
 
 #include <itkMultiThreader.h>
 
@@ -53,6 +54,8 @@ namespace mitk
 
     itkSetMacro(Offset,mitk::Vector3D)
     itkGetMacro(Offset,mitk::Vector3D)
+
+    void SetPointGeometry(mitk::BaseGeometry* geo);
 
     /**
     * \brief Starts the tracking.
@@ -151,6 +154,9 @@ namespace mitk
     mitk::OpenCVVideoSource::Pointer m_VideoSource;
     aruco::CameraParameters m_CameraParameters;
     aruco::MarkerDetector m_MarkerDetector;
+
+    mitk::BaseGeometry* m_Geometry;
+    bool m_GeoSet = false;
 
     float m_MarkerSize;
     string m_ErrorMessage;

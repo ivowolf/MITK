@@ -99,6 +99,8 @@ void ArucoTestView::CreateQtPartControl( QWidget *parent )
   connect( m_Controls.btnSlice, SIGNAL(clicked()), this, SLOT(GetSliceFromMarkerPosition()) );
   connect( m_Controls.boxSlicing, SIGNAL(toggled(bool)), this, SLOT(SetPermanentSlicing(bool)));
   connect( m_Controls.btnCalibrate, SIGNAL(clicked()), this, SLOT(CalibrateProbe()));
+  connect( m_Controls.btnSetImageGeo, SIGNAL(clicked()), this, SLOT(SetImageGeo()));
+  connect( m_Controls.btnWorldToImage, SIGNAL(clicked()), this, SLOT(WorldToImageExtract()));
 
   // retrieve old preferences
   m_VideoSource = mitk::OpenCVVideoSource::New();
@@ -109,9 +111,59 @@ void ArucoTestView::CreateQtPartControl( QWidget *parent )
   m_ArUcoTrackingDevice->SetVideoSource(m_VideoSource);
 }
 
+#include <mitkImageSliceSelector.h>
+
+void ArucoTestView::WorldToImageExtract()
+{
+//    mitk::NavigationData::Pointer navData = m_TrackingDeviceSource->GetOutput();
+//    mitk::Point3D pos = navData->GetPosition();
+    //Bild muss im DataManager ausgewählt sein -> besser: einmal als member variable kopieren ->TODO
+//    mitk::BaseGeometry::Pointer geo = m_SelectedImageNode->GetData()->GetGeometry();
+//    mitk::Point3D indexPos;
+//    geo->WorldToIndex(pos,indexPos);
+
+    mitk::Image::Pointer image = dynamic_cast<mitk::Image*>(m_SelectedImageNode->GetData());
+//    mitk::ExtractSliceFilter::Pointer sliceFilter = mitk::ExtractSliceFilter::New();
+
+//    sliceFilter->SetInput(image);
+////    sliceFilter->SetWorldGeometry();
+//    sliceFilter->Update();
+
+//    mitk::Image::Pointer imageSlice = sliceFilter->GetOutput();
+
+//    m_SlicedImage->SetData(imageSlice);
+
+    mitk::ImageSliceSelector::Pointer sel = mitk::ImageSliceSelector::New();
+    sel->SetInput(image);
+    sel->SetSliceNr(48);
+    sel->Update();
+
+    mitk::Image::Pointer sl = sel->GetOutput();
+    mitk::DataNode::Pointer test = mitk::DataNode::New();
+    test->SetData(sl);
+    test->SetName("sl");
+
+    this->GetDataStorage()->Add(test);
+
+    mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+}
+
 void ArucoTestView::SetPermanentSlicing(bool slicing)
 {
   m_Slicing = slicing;
+}
+
+void ArucoTestView::SetImageGeo()
+{
+    mitk::BaseGeometry* geo;
+    mitk::Image::Pointer image = dynamic_cast<mitk::Image*>(m_SelectedImageNode->GetData());
+    geo = image->GetGeometry();
+    if(image->IsEmpty() || !geo->IsValid())
+    {
+        MITK_ERROR << "Image or Geometry is empty ... " << std::endl;
+        return;
+    }
+    m_ArUcoTrackingDevice->SetPointGeometry(geo);
 }
 
 void ArucoTestView::OnSelectionChanged( berry::IWorkbenchPart::Pointer /*source*/,
@@ -294,6 +346,14 @@ void ArucoTestView::NewFrameAvailable(mitk::VideoSource*)
     cout<<endl<<endl;
     cv::imshow("in",TheInputImageCopy);
 //    cv::imshow("thres",MDetector.getThresholdedImage());
+
+        mitk::NavigationData::Pointer navData = m_TrackingDeviceSource->GetOutput();
+        mitk::Point3D pos = navData->GetPosition();
+//        Bild muss im DataManager ausgewählt sein -> besser: einmal als member variable kopieren ->TODO
+        mitk::BaseGeometry::Pointer geo = m_SelectedImageNode->GetData()->GetGeometry();
+        mitk::Point3D indexPos;
+        geo->WorldToIndex(pos,indexPos);
+        cout << "POS: x:" << indexPos[0] << " y: " << indexPos[1] << " z: " << indexPos[2] << std::endl;
 }
 
 void ArucoTestView::DoImageProcessing()

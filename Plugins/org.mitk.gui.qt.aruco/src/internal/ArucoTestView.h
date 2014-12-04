@@ -66,6 +66,10 @@ class ArucoTestView : public QmitkAbstractView
 
     void CalibrateProbe();
 
+    void SetImageGeo();
+
+    void WorldToImageExtract();
+
   protected:
 
     virtual void SetFocus();
