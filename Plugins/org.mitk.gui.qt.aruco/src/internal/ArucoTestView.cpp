@@ -65,6 +65,7 @@ const std::string ArucoTestView::VIEW_ID = "org.mitk.views.arucotestview";
 ArucoTestView::ArucoTestView()
 : m_VideoSource(0), m_Timer(NULL)
 {
+  m_RefImage = mitk::Image::New();
   m_TrackingDeviceSource = mitk::TrackingDeviceSource::New();
   m_ArUcoTrackingDevice = mitk::ArUcoTrackingDevice::New();
   m_ToolStorage = mitk::NavigationToolStorage::New();
@@ -101,6 +102,7 @@ void ArucoTestView::CreateQtPartControl( QWidget *parent )
   connect( m_Controls.btnCalibrate, SIGNAL(clicked()), this, SLOT(CalibrateProbe()));
   connect( m_Controls.btnSetImageGeo, SIGNAL(clicked()), this, SLOT(SetImageGeo()));
   connect( m_Controls.btnWorldToImage, SIGNAL(clicked()), this, SLOT(WorldToImageExtract()));
+  connect( m_Controls.btnSetImage, SIGNAL(clicked()), this, SLOT(SetRefImage()));
 
   // retrieve old preferences
   m_VideoSource = mitk::OpenCVVideoSource::New();
@@ -109,6 +111,11 @@ void ArucoTestView::CreateQtPartControl( QWidget *parent )
 
   m_VideoSource->SetVideoCameraInput(0);
   m_ArUcoTrackingDevice->SetVideoSource(m_VideoSource);
+}
+
+void ArucoTestView::SetRefImage()
+{
+    this->m_RefImage = dynamic_cast<mitk::Image*>(m_SelectedImageNode->GetData()->Clone());
 }
 
 #include <mitkImageSliceSelector.h>
@@ -264,7 +271,26 @@ void ArucoTestView::OnTimer()
 
   if(m_Slicing)
   {
-    this->GetSliceFromMarkerPosition();
+      this->GetSliceFromMarkerPosition();
+      mitk::NavigationData::Pointer navData = m_TrackingDeviceSource->GetOutput();
+      mitk::Point3D pos = navData->GetPosition();
+      //Bild muss im DataManager ausgewählt sein -> besser: einmal als member variable kopieren ->TODO
+      mitk::BaseGeometry::Pointer geo = m_SelectedImageNode->GetData()->GetGeometry();
+      mitk::Point3D indexPos;
+      geo->WorldToIndex(pos,indexPos);
+
+      mitk::Image::Pointer image = dynamic_cast<mitk::Image*>(m_SelectedImageNode->GetData());
+
+      mitk::ImageSliceSelector::Pointer sel = mitk::ImageSliceSelector::New();
+      sel->SetInput(image);
+      sel->SetSliceNr(indexPos[2]);
+      sel->Update();
+
+      mitk::Image::Pointer sl = sel->GetOutput();
+
+      m_SlicedImage->SetData(sl);
+
+      mitk::RenderingManager::GetInstance()->RequestUpdateAll();
   }
 
   mitk::RenderingManager::GetInstance()->RequestUpdateAll();  //update the render windows

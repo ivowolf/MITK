@@ -34,6 +34,8 @@ PURPOSE.  See the above copyright notices for more information.
 #include <QmitkVideoBackground.h>
 #include <QmitkRenderWindow.h>
 
+#include <mitkImage.h>
+
 
 class ArucoTestView : public QmitkAbstractView
 {
@@ -69,6 +71,8 @@ class ArucoTestView : public QmitkAbstractView
     void SetImageGeo();
 
     void WorldToImageExtract();
+
+    void SetRefImage();
 
   protected:
 
@@ -117,6 +121,7 @@ class ArucoTestView : public QmitkAbstractView
 
     mitk::DataNode::Pointer m_SelectedImageNode;
     mitk::DataNode::Pointer m_SlicedImage;
+    mitk::Image::Pointer m_RefImage;
 
     bool m_Slicing = false;
 

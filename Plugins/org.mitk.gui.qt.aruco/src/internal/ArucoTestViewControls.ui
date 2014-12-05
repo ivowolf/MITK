@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>176</width>
-    <height>398</height>
+    <height>431</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -118,6 +118,13 @@
     <widget class="QPushButton" name="btnWorldToImage">
      <property name="text">
       <string>WorldToImage</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPushButton" name="btnSetImage">
+     <property name="text">
+      <string>SetReferenceImage</string>
      </property>
     </widget>
    </item>
