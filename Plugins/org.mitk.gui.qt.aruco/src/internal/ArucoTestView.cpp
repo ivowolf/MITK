@@ -115,7 +115,9 @@ void ArucoTestView::CreateQtPartControl( QWidget *parent )
 
 void ArucoTestView::SetRefImage()
 {
-    this->m_RefImage = dynamic_cast<mitk::Image*>(m_SelectedImageNode->GetData()->Clone());
+    this->m_RefImage = dynamic_cast<mitk::Image*>(m_SelectedImageNode->GetData())->Clone();
+    if(m_RefImage.IsNull())
+        MITK_ERROR << "Cant set the reference Image!" << std::endl;
 }
 
 #include <mitkImageSliceSelector.h>
