@@ -204,7 +204,8 @@ void mitk::ArUcoTrackingDevice::TrackTools()
                 double position[3];
                 double orientation[4];
                 //hier kommen 3D koordinaten von der ogre methode ?! funktioniert nur für marker ?
-                markers.begin()->OgreGetPoseParameters( position, orientation );
+                marker.OgreGetPoseParameters(position,orientation);
+//                markers.begin()->OgreGetPoseParameters( position, orientation );
 //                cout << "Position: " << position[0] << " - " << position[1] << " - " << position[2] << endl;
 //                cout << "Orientation: " << orientation[0] << " - " << orientation[1] << " - " << orientation[2] << " - " << orientation[3] << endl;
                 mitk::Point3D mitkpoint;
