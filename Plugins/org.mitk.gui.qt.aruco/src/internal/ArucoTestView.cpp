@@ -104,6 +104,8 @@ void ArucoTestView::CreateQtPartControl( QWidget *parent )
   connect( m_Controls.btnWorldToImage, SIGNAL(clicked()), this, SLOT(WorldToImageExtract()));
   connect( m_Controls.btnSetImage, SIGNAL(clicked()), this, SLOT(SetRefImage()));
 
+  connect( m_Controls.btnTest, SIGNAL(clicked()), this, SLOT(CameraTest()) );
+
   // retrieve old preferences
   m_VideoSource = mitk::OpenCVVideoSource::New();
   m_VideoBackground = new QmitkVideoBackground(m_VideoSource);
@@ -111,6 +113,31 @@ void ArucoTestView::CreateQtPartControl( QWidget *parent )
 
   m_VideoSource->SetVideoCameraInput(0);
   m_ArUcoTrackingDevice->SetVideoSource(m_VideoSource);
+}
+
+#include <vtkRenderer.h>
+#include <vtkCamera.h>
+#include <mitkPoint.h>
+
+void ArucoTestView::CameraTest()
+{
+    mitk::Cone::Pointer cone = mitk::Cone::New();
+
+    mitk::DataNode::Pointer pointNode = mitk::DataNode::New();
+    pointNode->SetData(cone);
+    pointNode->SetName("ConeNode");
+    this->GetDataStorage()->Add(pointNode);
+
+    mitk::BaseRenderer* renderer = mitk::BaseRenderer::GetInstance(mitk::BaseRenderer::GetRenderWindowByName("stdmulti.widget4"));
+    vtkRenderer* vtkRenderer = renderer->GetVtkRenderer();
+    vtkCamera* camera = vtkRenderer->GetActiveCamera();
+    if(camera)
+    {
+        camera->SetPosition(10,10,10);
+//        camera->SetFocalPoint(0, 0, 0);
+//        camera->SetViewUp(viewUp[0],viewUp[1],viewUp[2]);
+    }
+    vtkRenderer->ResetCameraClippingRange();
 }
 
 void ArucoTestView::SetRefImage()
@@ -281,6 +308,8 @@ void ArucoTestView::OnTimer()
       mitk::Point3D indexPos;
       geo->WorldToIndex(pos,indexPos);
 
+      std::cout << "INDEXPOS: X: " << indexPos[0] << " Y: " << indexPos[1] << " Z: " << indexPos[2] << std::endl;
+
       mitk::Image::Pointer image = dynamic_cast<mitk::Image*>(m_SelectedImageNode->GetData());
 
       mitk::ImageSliceSelector::Pointer sel = mitk::ImageSliceSelector::New();
@@ -342,6 +371,22 @@ CameraParameters CP;
 void ArucoTestView::NewFrameAvailable(mitk::VideoSource*)
 {
   TheInputImage = m_VideoSource->GetImage();
+  cv::Mat* Image = new cv::Mat(m_VideoSource->GetCurrentFrame());
+
+//  IplImage* test;
+//  m_VideoSource->GetCurrentFrameAsOpenCVImage(test);
+//  cv::Mat im = test;
+//  cv::imshow("test",im);
+
+  IplImage* x;
+  x = const_cast<IplImage*>(m_VideoSource->GetCurrentFrame());
+  cv::Mat im = x;
+  cv::imshow("haha",im);
+
+  cv::Point p;
+  p.x = 0;
+  p.y = 0;
+  cv::circle(*Image,p,20,Scalar(255,0,0),3);
   //TheVideoCapturer.retrieve( TheInputImage);
   //copy image
 
@@ -372,16 +417,16 @@ void ArucoTestView::NewFrameAvailable(mitk::VideoSource*)
 //      CvDrawingUtils::draw3dAxis(TheInputImageCopy,TheMarkers[i],TheCameraParameters);
 //    }
     cout<<endl<<endl;
-    cv::imshow("in",TheInputImageCopy);
+//    cv::imshow("in",TheInputImageCopy);
 //    cv::imshow("thres",MDetector.getThresholdedImage());
-
+/*
         mitk::NavigationData::Pointer navData = m_TrackingDeviceSource->GetOutput();
         mitk::Point3D pos = navData->GetPosition();
 //        Bild muss im DataManager ausgewählt sein -> besser: einmal als member variable kopieren ->TODO
         mitk::BaseGeometry::Pointer geo = m_SelectedImageNode->GetData()->GetGeometry();
         mitk::Point3D indexPos;
         geo->WorldToIndex(pos,indexPos);
-        cout << "POS: x:" << indexPos[0] << " y: " << indexPos[1] << " z: " << indexPos[2] << std::endl;
+        cout << "POS: x:" << indexPos[0] << " y: " << indexPos[1] << " z: " << indexPos[2] << std::endl; */
 }
 
 void ArucoTestView::DoImageProcessing()

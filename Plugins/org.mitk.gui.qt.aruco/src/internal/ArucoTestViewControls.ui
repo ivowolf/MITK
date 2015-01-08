@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>176</width>
-    <height>431</height>
+    <height>464</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -125,6 +125,13 @@
     <widget class="QPushButton" name="btnSetImage">
      <property name="text">
       <string>SetReferenceImage</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPushButton" name="btnTest">
+     <property name="text">
+      <string>TEST BUTTON</string>
      </property>
     </widget>
    </item>
