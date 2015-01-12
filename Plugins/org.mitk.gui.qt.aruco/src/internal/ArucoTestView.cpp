@@ -40,12 +40,19 @@ PURPOSE.  See the above copyright notices for more information.
 using namespace cv;
 using namespace aruco;
 
+mitk::Point3D camPos;
+
 string TheInputVideo;
 string TheIntrinsicFile;
 float TheMarkerSize=-1;
 int ThePyrDownLevel;
 cv::Mat TheInputImageCopy;
 aruco::MarkerDetector MDetector;
+
+cv::Mat ExtrinsicRotation;
+cv::Mat ExtrinsicTranslation;
+
+vtkSmartPointer<vtkMatrix4x4> ExtrinsicTransformation;
 
 aruco::BoardDetector BDetector;
 
@@ -76,6 +83,8 @@ ArucoTestView::ArucoTestView()
           ( mitk::BaseRenderer::GetRenderWindowByName("stdmulti.widget1")));
   m_SlicedImage->SetVisibility(true, mitk::BaseRenderer::GetInstance
           ( mitk::BaseRenderer::GetRenderWindowByName("stdmulti.widget4")));
+
+  ExtrinsicTransformation = vtkSmartPointer<vtkMatrix4x4>::New();
 }
 
 ArucoTestView::~ArucoTestView()
@@ -133,7 +142,8 @@ void ArucoTestView::CameraTest()
     vtkCamera* camera = vtkRenderer->GetActiveCamera();
     if(camera)
     {
-        camera->SetPosition(10,10,10);
+//        camera->SetModelTransformMatrix(ExtrinsicTransformation);
+        camera->SetPosition(camPos[0],camPos[1],camPos[2]);
 //        camera->SetFocalPoint(0, 0, 0);
 //        camera->SetViewUp(viewUp[0],viewUp[1],viewUp[2]);
     }
@@ -368,25 +378,28 @@ void ArucoTestView::Start()
 BoardConfiguration BC;
 CameraParameters CP;
 
+
+#include <aruco/marker.h>
+
 void ArucoTestView::NewFrameAvailable(mitk::VideoSource*)
 {
   TheInputImage = m_VideoSource->GetImage();
-  cv::Mat* Image = new cv::Mat(m_VideoSource->GetCurrentFrame());
+//  cv::Mat* Image = new cv::Mat(m_VideoSource->GetCurrentFrame());
 
 //  IplImage* test;
 //  m_VideoSource->GetCurrentFrameAsOpenCVImage(test);
 //  cv::Mat im = test;
 //  cv::imshow("test",im);
 
-  IplImage* x;
-  x = const_cast<IplImage*>(m_VideoSource->GetCurrentFrame());
-  cv::Mat im = x;
-  cv::imshow("haha",im);
+//  IplImage* x;
+//  x = const_cast<IplImage*>(m_VideoSource->GetCurrentFrame());
+//  cv::Mat im = x;
+//  cv::imshow("haha",im);
 
-  cv::Point p;
-  p.x = 0;
-  p.y = 0;
-  cv::circle(*Image,p,20,Scalar(255,0,0),3);
+//  cv::Point p;
+//  p.x = 0;
+//  p.y = 0;
+//  cv::circle(*Image,p,20,Scalar(255,0,0),3);
   //TheVideoCapturer.retrieve( TheInputImage);
   //copy image
 
@@ -394,6 +407,67 @@ void ArucoTestView::NewFrameAvailable(mitk::VideoSource*)
 
   //Detection of markers in the image passed
   MDetector.detect(TheInputImage,TheMarkers,TheCameraParameters,TheMarkerSize);
+
+  for(int i=0; i<TheMarkers.size();i++){
+      Marker marker = TheMarkers.at(i);
+      if(marker.id == 900)
+      {
+          mitk::Point3D p;
+          p[0]=marker.Tvec.at<double>(0,0);
+          p[1]=marker.Tvec.at<double>(1,0);
+          p[2]=marker.Tvec.at<double>(2,0);
+
+          mitk::PointSet::Pointer ps = mitk::PointSet::New();
+          ps->InsertPoint(0, p);
+
+//          mitk::DataNode::Pointer node = mitk::DataNode::New();
+//          node->SetName("TestCameraVector");
+//          node->SetData(ps);
+//          this->GetDataStorage()->Add(node);
+
+          double position[3];
+          double orientation[4];
+          //hier kommen 3D koordinaten von der ogre methode ?! funktioniert nur für marker ?
+          marker.OgreGetPoseParameters(position,orientation);
+
+          //+ oder -
+          camPos[0]=position[0]+marker.Tvec.at<double>(0,0);
+          camPos[1]=position[1]+marker.Tvec.at<double>(1,0);
+          camPos[2]=position[2]+marker.Tvec.at<double>(2,0);
+
+          cv::Rodrigues(marker.Rvec,ExtrinsicRotation);
+          ExtrinsicTranslation = marker.Tvec;
+
+          ExtrinsicTransformation->SetElement(0,0,ExtrinsicRotation.at<double>(0,0));
+          ExtrinsicTransformation->SetElement(1,0,ExtrinsicRotation.at<double>(1,0));
+          ExtrinsicTransformation->SetElement(2,0,ExtrinsicRotation.at<double>(2,0));
+          ExtrinsicTransformation->SetElement(0,1,ExtrinsicRotation.at<double>(0,1));
+          ExtrinsicTransformation->SetElement(1,1,ExtrinsicRotation.at<double>(1,1));
+          ExtrinsicTransformation->SetElement(2,1,ExtrinsicRotation.at<double>(2,1));
+          ExtrinsicTransformation->SetElement(0,2,ExtrinsicRotation.at<double>(0,2));
+          ExtrinsicTransformation->SetElement(1,2,ExtrinsicRotation.at<double>(1,2));
+          ExtrinsicTransformation->SetElement(2,2,ExtrinsicRotation.at<double>(2,2));
+
+          ExtrinsicTransformation->SetElement(0,3,ExtrinsicTranslation.at<double>(0,0)*(-1));
+          ExtrinsicTransformation->SetElement(1,3,ExtrinsicTranslation.at<double>(1,0)*(-1));
+          ExtrinsicTransformation->SetElement(2,3,ExtrinsicTranslation.at<double>(2,0)*(-1));
+
+          ExtrinsicTransformation->SetElement(3,0,0);
+          ExtrinsicTransformation->SetElement(3,1,0);
+          ExtrinsicTransformation->SetElement(3,2,0);
+          ExtrinsicTransformation->SetElement(3,3,1);
+
+          ExtrinsicTransformation->Print(std::cout);
+
+//          std::cout << "ROTATION: " << ExtrinsicRotation << std::endl;
+//          std::cout << "TRANSLATION: " << ExtrinsicTranslation << std::endl;
+
+//          cv::Mat extrinsics;
+//          extrinsics.create(4,4,0.0);
+//          extrinsics
+          //Kamera-Position ist MarkerPos + Translation * Rotation
+      }
+  }
 
   //check the speed by calculating the mean speed of all iterations
 //  AvrgTime.first+=((double)getTickCount()-tick)/getTickFrequency();
@@ -594,16 +668,17 @@ void ArucoTestView::CalibrateProbe()
     Board b = BDetector.getDetectedBoard();
 
     double boardPosTmp[3];
+    double orientation[4];
 
     if(!b.empty())
     {
-        double orientation[4];
         b.OgreGetPoseParameters(boardPosTmp,orientation);
     }
     //! Board Detection until here
 
     mitk::NavigationData::Pointer navData = m_TrackingDeviceSource->GetOutput();
     mitk::Point3D probePos = navData->GetPosition();
+    //hier theoretisch noch die orientation holen und als rotation mitberechnen
     mitk::Point3D boardPos;
     boardPos[0]=boardPosTmp[0]/100; boardPos[1]=boardPosTmp[1]/100; boardPos[2]=boardPosTmp[2]/100;
 

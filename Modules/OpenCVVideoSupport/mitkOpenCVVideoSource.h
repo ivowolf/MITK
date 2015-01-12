@@ -54,7 +54,6 @@ namespace mitk
     mitkClassMacro( OpenCVVideoSource, VideoSource );
     itkFactorylessNewMacro(Self)
     itkCloneMacro(Self)
-
     ////##Documentation
     ////## @brief sets a video file as input device. One video frame is being processed by updating the renderwindow.
     ////## Notice: Which codecs and file formats are supported depends on the back end library.
