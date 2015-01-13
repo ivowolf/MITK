@@ -223,15 +223,12 @@ void mitk::ArUcoTrackingDevice::TrackTools()
                 {
                     mitk::Point3D worldPoint;
                     m_Geometry->IndexToWorld(offsetPosition, worldPoint);
+
                     this->m_AllTools[0]->SetPosition(worldPoint);
-//                    this->m_AllTools[0]->SetOrientation();
-                    //hier und unten noch die orientation von dem marker setzen als Quaternion
                 }
                 else
                 {
                     this->m_AllTools[0]->SetPosition(offsetPosition);
-//                    this->m_AllTools[0]->SetOrientation();
-                    //hier und unten noch die orientation von dem marker setzen
                 }
 
                 mitk::Quaternion mitkorientation(orientation[0], orientation[1], orientation[2], orientation[3]);

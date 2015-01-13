@@ -41,6 +41,7 @@ using namespace cv;
 using namespace aruco;
 
 mitk::Point3D camPos;
+mitk::Point3D focalPoint;
 
 string TheInputVideo;
 string TheIntrinsicFile;
@@ -130,22 +131,21 @@ void ArucoTestView::CreateQtPartControl( QWidget *parent )
 
 void ArucoTestView::CameraTest()
 {
-    mitk::Cone::Pointer cone = mitk::Cone::New();
+//    mitk::Cone::Pointer cone = mitk::Cone::New();
 
-    mitk::DataNode::Pointer pointNode = mitk::DataNode::New();
-    pointNode->SetData(cone);
-    pointNode->SetName("ConeNode");
-    this->GetDataStorage()->Add(pointNode);
+//    mitk::DataNode::Pointer pointNode = mitk::DataNode::New();
+//    pointNode->SetData(cone);
+//    pointNode->SetName("ConeNode");
+//    this->GetDataStorage()->Add(pointNode);
 
     mitk::BaseRenderer* renderer = mitk::BaseRenderer::GetInstance(mitk::BaseRenderer::GetRenderWindowByName("stdmulti.widget4"));
     vtkRenderer* vtkRenderer = renderer->GetVtkRenderer();
     vtkCamera* camera = vtkRenderer->GetActiveCamera();
     if(camera)
     {
-//        camera->SetModelTransformMatrix(ExtrinsicTransformation);
         camera->SetPosition(camPos[0],camPos[1],camPos[2]);
-//        camera->SetFocalPoint(0, 0, 0);
-//        camera->SetViewUp(viewUp[0],viewUp[1],viewUp[2]);
+//        camera->SetFocalPoint(focalPoint[0],focalPoint[1],focalPoint[2]);
+        camera->SetViewUp(viewUp[0],viewUp[1],viewUp[2]);
     }
     vtkRenderer->ResetCameraClippingRange();
 }
@@ -412,6 +412,12 @@ void ArucoTestView::NewFrameAvailable(mitk::VideoSource*)
       Marker marker = TheMarkers.at(i);
       if(marker.id == 900)
       {
+          double pos[3];
+          double orient[4];
+          marker.OgreGetPoseParameters(pos,orient);
+
+          focalPoint = pos;
+
           mitk::Point3D p;
           p[0]=marker.Tvec.at<double>(0,0);
           p[1]=marker.Tvec.at<double>(1,0);
