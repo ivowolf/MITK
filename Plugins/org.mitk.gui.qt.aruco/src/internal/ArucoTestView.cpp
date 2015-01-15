@@ -42,6 +42,7 @@ using namespace aruco;
 
 mitk::Point3D camPos;
 mitk::Point3D focalPoint;
+mitk::Point3D markerPos;
 
 string TheInputVideo;
 string TheIntrinsicFile;
@@ -145,7 +146,7 @@ void ArucoTestView::CameraTest()
     {
         camera->SetPosition(camPos[0],camPos[1],camPos[2]);
 //        camera->SetFocalPoint(focalPoint[0],focalPoint[1],focalPoint[2]);
-        camera->SetViewUp(viewUp[0],viewUp[1],viewUp[2]);
+//        camera->SetViewUp(0,1,0);
     }
     vtkRenderer->ResetCameraClippingRange();
 }
@@ -436,6 +437,8 @@ void ArucoTestView::NewFrameAvailable(mitk::VideoSource*)
           //hier kommen 3D koordinaten von der ogre methode ?! funktioniert nur für marker ?
           marker.OgreGetPoseParameters(position,orientation);
 
+          markerPos = position;
+
           //+ oder -
           camPos[0]=position[0]+marker.Tvec.at<double>(0,0);
           camPos[1]=position[1]+marker.Tvec.at<double>(1,0);
@@ -443,6 +446,26 @@ void ArucoTestView::NewFrameAvailable(mitk::VideoSource*)
 
           cv::Rodrigues(marker.Rvec,ExtrinsicRotation);
           ExtrinsicTranslation = marker.Tvec;
+          cv::Mat inv = ExtrinsicRotation.inv();
+
+          cv::Mat focalvec = inv * ExtrinsicTranslation;
+
+          focalPoint[0] = camPos[0] - focalvec.at<double>(0,0);
+          focalPoint[1] = camPos[1] - focalvec.at<double>(1,0);
+          focalPoint[2] = camPos[2] - focalvec.at<double>(2,0);
+
+//          std::cout << "MAT" << std::endl << ExtrinsicRotation << std::endl;
+//          std::cout << "INV" << std::endl << inv << std::endl;
+
+//          cv::Mat r = ExtrinsicRotation * ExtrinsicTranslation;
+
+//          camPos[0]=position[0]+r.at<double>(0,0);
+//          camPos[1]=position[1]+r.at<double>(1,0);
+//          camPos[2]=position[2]+r.at<double>(2,0);
+
+//          std::cout << "TRANS: " << ExtrinsicTranslation << std::endl;
+//          std::cout << "ROTAT: " << ExtrinsicRotation << std::endl;
+//          std::cout << "MAT: " << r << std::endl;
 
           ExtrinsicTransformation->SetElement(0,0,ExtrinsicRotation.at<double>(0,0));
           ExtrinsicTransformation->SetElement(1,0,ExtrinsicRotation.at<double>(1,0));
