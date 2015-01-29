@@ -76,6 +76,8 @@ class ArucoTestView : public QmitkAbstractView
 
     void CameraTest();
 
+    void X();
+
   protected:
 
     virtual void SetFocus();

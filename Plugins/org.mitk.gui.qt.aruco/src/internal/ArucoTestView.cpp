@@ -117,6 +117,8 @@ void ArucoTestView::CreateQtPartControl( QWidget *parent )
 
   connect( m_Controls.btnTest, SIGNAL(clicked()), this, SLOT(CameraTest()) );
 
+  connect( m_Controls.btnX, SIGNAL(clicked()), this, SLOT(X()) );
+
   // retrieve old preferences
   m_VideoSource = mitk::OpenCVVideoSource::New();
   m_VideoBackground = new QmitkVideoBackground(m_VideoSource);
@@ -129,6 +131,18 @@ void ArucoTestView::CreateQtPartControl( QWidget *parent )
 #include <vtkRenderer.h>
 #include <vtkCamera.h>
 #include <mitkPoint.h>
+#include <mitkCuboid.h>
+
+void ArucoTestView::X()
+{
+    mitk::Cuboid::Pointer cubo = mitk::Cuboid::New();
+    mitk::DataNode::Pointer node = mitk::DataNode::New();
+    node->SetName("CuboNode");
+    node->SetData(cubo);
+    this->GetDataStorage()->Add(node);
+
+    MITK_INFO << "Origin: " << cubo->GetGeometry()->GetOrigin();
+}
 
 void ArucoTestView::CameraTest()
 {
@@ -144,9 +158,24 @@ void ArucoTestView::CameraTest()
     vtkCamera* camera = vtkRenderer->GetActiveCamera();
     if(camera)
     {
+        //        camera->SetPosition(camPos[0],camPos[1],camPos[2]);
+        //        camera->SetFocalPoint(focalPoint[0],focalPoint[1],focalPoint[2]);
+        //        camera->SetViewUp(0,1,0);
+
+        double pos[3];
+        camera->GetPosition(pos);
+        MITK_INFO << "Position " << pos[0] << " " << pos[1] << " " << pos[2];
+        double focal[3];
+        camera->GetFocalPoint(focal);
+        MITK_INFO << "FocalPoint " << focal[0] << " " << focal[1] << " " << focal[2];
+        double view[3];
+        camera->GetViewUp(view);
+        MITK_INFO << "ViewUp " << view[0] << " " << view[1] << " " << view[2];
+
+//        camera->SetPosition(0, -6.69213, 0.5);
         camera->SetPosition(camPos[0],camPos[1],camPos[2]);
-//        camera->SetFocalPoint(focalPoint[0],focalPoint[1],focalPoint[2]);
-//        camera->SetViewUp(0,1,0);
+        camera->SetFocalPoint(0, 0, 0);
+        camera->SetViewUp(0, 0, 1);
     }
     vtkRenderer->ResetCameraClippingRange();
 }
@@ -309,6 +338,9 @@ void ArucoTestView::OnTimer()
   //will be adapted.
   m_Visualizer->Update();
 
+  mitk::NavigationData::Pointer navData = m_TrackingDeviceSource->GetOutput();
+  markerPos = navData->GetPosition();
+
   if(m_Slicing)
   {
       this->GetSliceFromMarkerPosition();
@@ -440,9 +472,14 @@ void ArucoTestView::NewFrameAvailable(mitk::VideoSource*)
           markerPos = position;
 
           //+ oder -
-          camPos[0]=position[0]+marker.Tvec.at<double>(0,0);
-          camPos[1]=position[1]+marker.Tvec.at<double>(1,0);
-          camPos[2]=position[2]+marker.Tvec.at<double>(2,0);
+          camPos[0]=position[0]-marker.Tvec.at<double>(0,0);
+          camPos[1]=position[1]-marker.Tvec.at<double>(1,0);
+          camPos[2]=position[2]-marker.Tvec.at<double>(2,0);
+
+          std::cout << "MarPos: " << position[0] << " " << position[1] << " " << position[2] << std::endl;
+          std::cout << "TvePos: " << marker.Tvec.at<double>(0,0) << " " << marker.Tvec.at<double>(1,0) << " " << marker.Tvec.at<double>(2,0) << std::endl;
+          std::cout << "Control:" << marker.Tvec << std::endl;
+          std::cout << "CamPos: " << camPos[0] << " " << camPos[1] << " " << camPos[2] << std::endl;
 
           cv::Rodrigues(marker.Rvec,ExtrinsicRotation);
           ExtrinsicTranslation = marker.Tvec;
