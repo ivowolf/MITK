@@ -44,6 +44,9 @@ mitk::Point3D camPos;
 mitk::Point3D focalPoint;
 mitk::Point3D markerPos;
 
+cv::Mat pTvec;
+cv::Mat pRvec;
+
 string TheInputVideo;
 string TheIntrinsicFile;
 float TheMarkerSize=-1;
@@ -119,6 +122,8 @@ void ArucoTestView::CreateQtPartControl( QWidget *parent )
 
   connect( m_Controls.btnX, SIGNAL(clicked()), this, SLOT(X()) );
 
+  connect( m_Controls.btnCamParams, SIGNAL(clicked()), this, SLOT(CamParamsTest()) );
+
   // retrieve old preferences
   m_VideoSource = mitk::OpenCVVideoSource::New();
   m_VideoBackground = new QmitkVideoBackground(m_VideoSource);
@@ -172,12 +177,59 @@ void ArucoTestView::CameraTest()
         camera->GetViewUp(view);
         MITK_INFO << "ViewUp " << view[0] << " " << view[1] << " " << view[2];
 
-//        camera->SetPosition(0, -6.69213, 0.5);
-        camera->SetPosition(camPos[0],camPos[1],camPos[2]);
+        camera->SetPosition(0, -6.69213, 5.5);
+//        camera->SetPosition(0.179, -0.984, 0.004); //0.179 -0.984 0.004
+//        camera->SetPosition(camPos[0],camPos[1],camPos[2]);
         camera->SetFocalPoint(0, 0, 0);
         camera->SetViewUp(0, 0, 1);
     }
     vtkRenderer->ResetCameraClippingRange();
+}
+
+void ArucoTestView::CamParamsTest()
+{
+    TheInputImage = m_VideoSource->GetImage();
+
+    aruco::CameraParameters camParams;
+    camParams.readFromXMLFile("/home/riecker/Development/src/Seminar/Plugins/org.mitk.gui.qt.aruco/out_camera_data.xml");
+
+    //Detection of markers in the image passed
+    MDetector.detect(TheInputImage,TheMarkers,TheCameraParameters,200);
+
+    for(int i=0; i<TheMarkers.size();i++){
+        Marker marker = TheMarkers.at(i);
+        if(marker.id == 900)
+        {
+            double pos[3];
+            double orient[4];
+            marker.OgreGetPoseParameters(pos,orient);
+
+
+            pTvec = marker.Tvec;
+            pRvec = marker.Rvec;
+
+//            cv::Point3f tmp = TheCameraParameters.getCameraLocation(marker.Rvec, marker.Tvec); //error by calling this method ...
+//            std::cout << "EYE : " << tmp.x << " " << tmp.y << " " << tmp.z << std::endl;
+
+            cv::Mat m33(3,3,CV_32FC1);
+            cv::Rodrigues(marker.Rvec, m33)  ;
+
+            cv::Mat m44=cv::Mat::eye(4,4,CV_32FC1);
+            for (int i=0;i<3;i++)
+                for (int j=0;j<3;j++)
+                    m44.at<float>(i,j)=m33.at<float>(i,j);
+
+            //now, add translation information
+            for (int i=0;i<3;i++)
+                m44.at<float>(i,3)=marker.Tvec.at<float>(0,i);
+            //invert the matrix
+            m44.inv();
+            cv::Point3f tmp = cv::Point3f( m44.at<float>(0,0),m44.at<float>(0,1),m44.at<float>(0,2));
+
+            std::cout << "EYE : " << tmp.x << " " << tmp.y << " " << tmp.z << std::endl;
+            //0.179 -0.984 0.004
+        }
+    }
 }
 
 void ArucoTestView::SetRefImage()
@@ -394,8 +446,8 @@ void ArucoTestView::Start()
   TheIntrinsicFile="/home/riecker/Development/src/Seminar/Plugins/org.mitk.gui.qt.aruco/out_camera_data.xml";
   if (TheIntrinsicFile!="") {
     TheCameraParameters.readFromXMLFile(TheIntrinsicFile);
-    TheCameraParameters.resize(m_VideoSource->GetImage().size());
-    TheMarkerSize = 4;
+//    TheCameraParameters.resize(m_VideoSource->GetImage().size());
+//    TheMarkerSize = 4;
   }
   //Configure other parameters
   if (ThePyrDownLevel>0)
@@ -471,13 +523,19 @@ void ArucoTestView::NewFrameAvailable(mitk::VideoSource*)
 
           markerPos = position;
 
+          pTvec = marker.Tvec;
+          pRvec = marker.Rvec;
+
+//          cv::Point3f tmp = TheCameraParameters.getCameraLocation(marker.Rvec, marker.Tvec);
+//          std::cout << "EYE : " << tmp.x << " " << tmp.y << " " << tmp.z << std::endl;
+
           //+ oder -
           camPos[0]=position[0]-marker.Tvec.at<double>(0,0);
           camPos[1]=position[1]-marker.Tvec.at<double>(1,0);
           camPos[2]=position[2]-marker.Tvec.at<double>(2,0);
 
           std::cout << "MarPos: " << position[0] << " " << position[1] << " " << position[2] << std::endl;
-          std::cout << "TvePos: " << marker.Tvec.at<double>(0,0) << " " << marker.Tvec.at<double>(1,0) << " " << marker.Tvec.at<double>(2,0) << std::endl;
+          std::cout << "TvePos: " << marker.Tvec.at<double>(0,0) << " " << marker.Tvec.at<double>(0,1) << " " << marker.Tvec.at<double>(0,2) << std::endl;// Zugriff funktioniert so nicht!
           std::cout << "Control:" << marker.Tvec << std::endl;
           std::cout << "CamPos: " << camPos[0] << " " << camPos[1] << " " << camPos[2] << std::endl;
 
@@ -523,7 +581,7 @@ void ArucoTestView::NewFrameAvailable(mitk::VideoSource*)
           ExtrinsicTransformation->SetElement(3,2,0);
           ExtrinsicTransformation->SetElement(3,3,1);
 
-          ExtrinsicTransformation->Print(std::cout);
+//          ExtrinsicTransformation->Print(std::cout);
 
 //          std::cout << "ROTATION: " << ExtrinsicRotation << std::endl;
 //          std::cout << "TRANSLATION: " << ExtrinsicTranslation << std::endl;
