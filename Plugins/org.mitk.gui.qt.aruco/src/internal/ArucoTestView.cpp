@@ -75,7 +75,7 @@ void cvTackBarEvents(int pos,void*);
 const std::string ArucoTestView::VIEW_ID = "org.mitk.views.arucotestview";
 
 ArucoTestView::ArucoTestView()
-: m_VideoSource(0), m_Timer(NULL)
+  : m_VideoSource(0), m_Timer(NULL)
 {
   m_RefImage = mitk::Image::New();
   m_TrackingDeviceSource = mitk::TrackingDeviceSource::New();
@@ -85,9 +85,9 @@ ArucoTestView::ArucoTestView()
   m_SlicedImage = mitk::DataNode::New();
   m_SlicedImage->SetName("SlicedImage");
   m_SlicedImage->SetVisibility(true, mitk::BaseRenderer::GetInstance
-          ( mitk::BaseRenderer::GetRenderWindowByName("stdmulti.widget1")));
+                               ( mitk::BaseRenderer::GetRenderWindowByName("stdmulti.widget1")));
   m_SlicedImage->SetVisibility(true, mitk::BaseRenderer::GetInstance
-          ( mitk::BaseRenderer::GetRenderWindowByName("stdmulti.widget4")));
+                               ( mitk::BaseRenderer::GetRenderWindowByName("stdmulti.widget4")));
 
   ExtrinsicTransformation = vtkSmartPointer<vtkMatrix4x4>::New();
 }
@@ -140,140 +140,143 @@ void ArucoTestView::CreateQtPartControl( QWidget *parent )
 
 void ArucoTestView::X()
 {
-    mitk::Cuboid::Pointer cubo = mitk::Cuboid::New();
-    mitk::DataNode::Pointer node = mitk::DataNode::New();
-    node->SetName("CuboNode");
-    node->SetData(cubo);
-    this->GetDataStorage()->Add(node);
+  mitk::Cuboid::Pointer cubo = mitk::Cuboid::New();
+  mitk::DataNode::Pointer node = mitk::DataNode::New();
+  node->SetName("CuboNode");
+  node->SetData(cubo);
+  this->GetDataStorage()->Add(node);
 
-    MITK_INFO << "Origin: " << cubo->GetGeometry()->GetOrigin();
+  MITK_INFO << "Origin: " << cubo->GetGeometry()->GetOrigin();
 }
 
 void ArucoTestView::CameraTest()
 {
-//    mitk::Cone::Pointer cone = mitk::Cone::New();
+  //    mitk::Cone::Pointer cone = mitk::Cone::New();
 
-//    mitk::DataNode::Pointer pointNode = mitk::DataNode::New();
-//    pointNode->SetData(cone);
-//    pointNode->SetName("ConeNode");
-//    this->GetDataStorage()->Add(pointNode);
+  //    mitk::DataNode::Pointer pointNode = mitk::DataNode::New();
+  //    pointNode->SetData(cone);
+  //    pointNode->SetName("ConeNode");
+  //    this->GetDataStorage()->Add(pointNode);
 
-    mitk::BaseRenderer* renderer = mitk::BaseRenderer::GetInstance(mitk::BaseRenderer::GetRenderWindowByName("stdmulti.widget4"));
-    vtkRenderer* vtkRenderer = renderer->GetVtkRenderer();
-    vtkCamera* camera = vtkRenderer->GetActiveCamera();
-    if(camera)
-    {
-        //        camera->SetPosition(camPos[0],camPos[1],camPos[2]);
-        //        camera->SetFocalPoint(focalPoint[0],focalPoint[1],focalPoint[2]);
-        //        camera->SetViewUp(0,1,0);
+  mitk::BaseRenderer* renderer = mitk::BaseRenderer::GetInstance(mitk::BaseRenderer::GetRenderWindowByName("stdmulti.widget4"));
+  vtkRenderer* vtkRenderer = renderer->GetVtkRenderer();
+  vtkCamera* camera = vtkRenderer->GetActiveCamera();
+  if(camera)
+  {
+    //        camera->SetPosition(camPos[0],camPos[1],camPos[2]);
+    //        camera->SetFocalPoint(focalPoint[0],focalPoint[1],focalPoint[2]);
+    //        camera->SetViewUp(0,1,0);
 
-        double pos[3];
-        camera->GetPosition(pos);
-        MITK_INFO << "Position " << pos[0] << " " << pos[1] << " " << pos[2];
-        double focal[3];
-        camera->GetFocalPoint(focal);
-        MITK_INFO << "FocalPoint " << focal[0] << " " << focal[1] << " " << focal[2];
-        double view[3];
-        camera->GetViewUp(view);
-        MITK_INFO << "ViewUp " << view[0] << " " << view[1] << " " << view[2];
+    double pos[3];
+    camera->GetPosition(pos);
+    MITK_INFO << "Position " << pos[0] << " " << pos[1] << " " << pos[2];
+    double focal[3];
+    camera->GetFocalPoint(focal);
+    MITK_INFO << "FocalPoint " << focal[0] << " " << focal[1] << " " << focal[2];
+    double view[3];
+    camera->GetViewUp(view);
+    MITK_INFO << "ViewUp " << view[0] << " " << view[1] << " " << view[2];
 
-        camera->SetPosition(0, -6.69213, 5.5);
-//        camera->SetPosition(0.179, -0.984, 0.004); //0.179 -0.984 0.004
-//        camera->SetPosition(camPos[0],camPos[1],camPos[2]);
-        camera->SetFocalPoint(0, 0, 0);
-        camera->SetViewUp(0, 0, 1);
-    }
-    vtkRenderer->ResetCameraClippingRange();
+    camera->SetPosition(0, -6.69213, 5.5);
+    //        camera->SetPosition(0.179, -0.984, 0.004); //0.179 -0.984 0.004
+    //        camera->SetPosition(camPos[0],camPos[1],camPos[2]);
+    camera->SetFocalPoint(0, 0, 0);
+    camera->SetViewUp(0, 0, 1);
+  }
+  vtkRenderer->ResetCameraClippingRange();
 }
 
 void ArucoTestView::CamParamsTest()
 {
-    TheInputImage = m_VideoSource->GetImage();
+  TheInputImage = m_VideoSource->GetImage();
 
-    aruco::CameraParameters camParams;
-    camParams.readFromXMLFile("/home/riecker/Development/src/Seminar/Plugins/org.mitk.gui.qt.aruco/out_camera_data.xml");
+  aruco::CameraParameters camParams;
+  camParams.readFromXMLFile("/home/riecker/Development/src/Seminar/Plugins/org.mitk.gui.qt.aruco/out_camera_data.xml");
 
-    //Detection of markers in the image passed
-    MDetector.detect(TheInputImage,TheMarkers,TheCameraParameters,200);
+  cv::Mat intrinsics = camParams.CameraMatrix;
+  double focalLengthY = intrinsics.at<float>(1,1); //focalLengthX is at 0,0 of matrix
 
-    for(int i=0; i<TheMarkers.size();i++){
-        Marker marker = TheMarkers.at(i);
-        if(marker.id == 900)
-        {
-            double pos[3];
-            double orient[4];
-            marker.OgreGetPoseParameters(pos,orient);
+  //Detection of markers in the image passed
+  MDetector.detect(TheInputImage,TheMarkers,TheCameraParameters,200);
+
+  for(int i=0; i<TheMarkers.size();i++){
+    Marker marker = TheMarkers.at(i);
+    if(marker.id == 900)
+    {
+      double pos[3];
+      double orient[4];
+      marker.OgreGetPoseParameters(pos,orient);
 
 
-            pTvec = marker.Tvec;
-            pRvec = marker.Rvec;
+      pTvec = marker.Tvec;
+      pRvec = marker.Rvec;
 
-//            cv::Point3f tmp = TheCameraParameters.getCameraLocation(marker.Rvec, marker.Tvec); //error by calling this method ...
-//            std::cout << "EYE : " << tmp.x << " " << tmp.y << " " << tmp.z << std::endl;
+      //            cv::Point3f tmp = TheCameraParameters.getCameraLocation(marker.Rvec, marker.Tvec); //error by calling this method ...
+      //            std::cout << "EYE : " << tmp.x << " " << tmp.y << " " << tmp.z << std::endl;
 
-            cv::Mat m33(3,3,CV_32FC1);
-            cv::Rodrigues(marker.Rvec, m33)  ;
+      cv::Mat m33(3,3,CV_32FC1);
+      cv::Rodrigues(marker.Rvec, m33)  ;
 
-            cv::Mat m44=cv::Mat::eye(4,4,CV_32FC1);
-            for (int i=0;i<3;i++)
-                for (int j=0;j<3;j++)
-                    m44.at<float>(i,j)=m33.at<float>(i,j);
+      cv::Mat m44=cv::Mat::eye(4,4,CV_32FC1);
+      for (int i=0;i<3;i++)
+        for (int j=0;j<3;j++)
+          m44.at<float>(i,j)=m33.at<float>(i,j);
 
-            //now, add translation information
-            for (int i=0;i<3;i++)
-                m44.at<float>(i,3)=marker.Tvec.at<float>(0,i);
-            //invert the matrix
-            m44.inv();
-            cv::Point3f tmp = cv::Point3f( m44.at<float>(0,0),m44.at<float>(0,1),m44.at<float>(0,2));
+      //now, add translation information
+      for (int i=0;i<3;i++)
+        m44.at<float>(i,3)=marker.Tvec.at<float>(0,i);
+      //invert the matrix
+      m44.inv();
+      cv::Point3f tmp = cv::Point3f( m44.at<float>(0,0),m44.at<float>(0,1),m44.at<float>(0,2));
 
-            std::cout << "EYE : " << tmp.x << " " << tmp.y << " " << tmp.z << std::endl;
-            //0.179 -0.984 0.004
-        }
+      std::cout << "EYE : " << tmp.x << " " << tmp.y << " " << tmp.z << std::endl;
+      //0.179 -0.984 0.004
     }
+  }
 }
 
 void ArucoTestView::SetRefImage()
 {
-    this->m_RefImage = dynamic_cast<mitk::Image*>(m_SelectedImageNode->GetData())->Clone();
-    if(m_RefImage.IsNull())
-        MITK_ERROR << "Cant set the reference Image!" << std::endl;
+  this->m_RefImage = dynamic_cast<mitk::Image*>(m_SelectedImageNode->GetData())->Clone();
+  if(m_RefImage.IsNull())
+    MITK_ERROR << "Cant set the reference Image!" << std::endl;
 }
 
 #include <mitkImageSliceSelector.h>
 
 void ArucoTestView::WorldToImageExtract()
 {
-//    mitk::NavigationData::Pointer navData = m_TrackingDeviceSource->GetOutput();
-//    mitk::Point3D pos = navData->GetPosition();
-    //Bild muss im DataManager ausgewählt sein -> besser: einmal als member variable kopieren ->TODO
-//    mitk::BaseGeometry::Pointer geo = m_SelectedImageNode->GetData()->GetGeometry();
-//    mitk::Point3D indexPos;
-//    geo->WorldToIndex(pos,indexPos);
+  //    mitk::NavigationData::Pointer navData = m_TrackingDeviceSource->GetOutput();
+  //    mitk::Point3D pos = navData->GetPosition();
+  //Bild muss im DataManager ausgewählt sein -> besser: einmal als member variable kopieren ->TODO
+  //    mitk::BaseGeometry::Pointer geo = m_SelectedImageNode->GetData()->GetGeometry();
+  //    mitk::Point3D indexPos;
+  //    geo->WorldToIndex(pos,indexPos);
 
-    mitk::Image::Pointer image = dynamic_cast<mitk::Image*>(m_SelectedImageNode->GetData());
-//    mitk::ExtractSliceFilter::Pointer sliceFilter = mitk::ExtractSliceFilter::New();
+  mitk::Image::Pointer image = dynamic_cast<mitk::Image*>(m_SelectedImageNode->GetData());
+  //    mitk::ExtractSliceFilter::Pointer sliceFilter = mitk::ExtractSliceFilter::New();
 
-//    sliceFilter->SetInput(image);
-////    sliceFilter->SetWorldGeometry();
-//    sliceFilter->Update();
+  //    sliceFilter->SetInput(image);
+  ////    sliceFilter->SetWorldGeometry();
+  //    sliceFilter->Update();
 
-//    mitk::Image::Pointer imageSlice = sliceFilter->GetOutput();
+  //    mitk::Image::Pointer imageSlice = sliceFilter->GetOutput();
 
-//    m_SlicedImage->SetData(imageSlice);
+  //    m_SlicedImage->SetData(imageSlice);
 
-    mitk::ImageSliceSelector::Pointer sel = mitk::ImageSliceSelector::New();
-    sel->SetInput(image);
-    sel->SetSliceNr(48);
-    sel->Update();
+  mitk::ImageSliceSelector::Pointer sel = mitk::ImageSliceSelector::New();
+  sel->SetInput(image);
+  sel->SetSliceNr(48);
+  sel->Update();
 
-    mitk::Image::Pointer sl = sel->GetOutput();
-    mitk::DataNode::Pointer test = mitk::DataNode::New();
-    test->SetData(sl);
-    test->SetName("sl");
+  mitk::Image::Pointer sl = sel->GetOutput();
+  mitk::DataNode::Pointer test = mitk::DataNode::New();
+  test->SetData(sl);
+  test->SetName("sl");
 
-    this->GetDataStorage()->Add(test);
+  this->GetDataStorage()->Add(test);
 
-    mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+  mitk::RenderingManager::GetInstance()->RequestUpdateAll();
 }
 
 void ArucoTestView::SetPermanentSlicing(bool slicing)
@@ -283,19 +286,19 @@ void ArucoTestView::SetPermanentSlicing(bool slicing)
 
 void ArucoTestView::SetImageGeo()
 {
-    mitk::BaseGeometry* geo;
-    mitk::Image::Pointer image = dynamic_cast<mitk::Image*>(m_SelectedImageNode->GetData());
-    geo = image->GetGeometry();
-    if(image->IsEmpty() || !geo->IsValid())
-    {
-        MITK_ERROR << "Image or Geometry is empty ... " << std::endl;
-        return;
-    }
-    m_ArUcoTrackingDevice->SetPointGeometry(geo);
+  mitk::BaseGeometry* geo;
+  mitk::Image::Pointer image = dynamic_cast<mitk::Image*>(m_SelectedImageNode->GetData());
+  geo = image->GetGeometry();
+  if(image->IsEmpty() || !geo->IsValid())
+  {
+    MITK_ERROR << "Image or Geometry is empty ... " << std::endl;
+    return;
+  }
+  m_ArUcoTrackingDevice->SetPointGeometry(geo);
 }
 
 void ArucoTestView::OnSelectionChanged( berry::IWorkbenchPart::Pointer /*source*/,
-                                             const QList<mitk::DataNode::Pointer>& nodes )
+                                        const QList<mitk::DataNode::Pointer>& nodes )
 {
   foreach( mitk::DataNode::Pointer node, nodes )
   {
@@ -312,7 +315,7 @@ void ArucoTestView::OnSelectionChanged( berry::IWorkbenchPart::Pointer /*source*
 
 void ArucoTestView::SetupArUcoTracker()
 {
-    // TODO color the label if the board is available
+  // TODO color the label if the board is available
   m_Controls.boardDetectionLabel->setStyleSheet("QLabel { background-color : red;}");
   m_TrackingDeviceSource->SetTrackingDevice(m_ArUcoTrackingDevice);
   m_TrackingDeviceSource->RegisterAsMicroservice();
@@ -342,7 +345,7 @@ void ArucoTestView::SetupArUcoTracker()
   //Here we take a cone shaped PolyData. In MITK you have to add the PolyData as a node into the DataStorage
   //to show it inside of the rendering windows. After that you can change the properties of the cone
   //to manipulate rendering, e.g. the position and orientation as in our case.
-//  float scale[] = {10.0, 10.0, 10.0};
+  //  float scale[] = {10.0, 10.0, 10.0};
   mitk::Vector3D scale;
   scale.Fill(2);
   cone->GetGeometry()->SetSpacing(scale);                       //scale it a little that so we can see something
@@ -395,28 +398,28 @@ void ArucoTestView::OnTimer()
 
   if(m_Slicing)
   {
-      this->GetSliceFromMarkerPosition();
-      mitk::NavigationData::Pointer navData = m_TrackingDeviceSource->GetOutput();
-      mitk::Point3D pos = navData->GetPosition();
-      //Bild muss im DataManager ausgewählt sein -> besser: einmal als member variable kopieren ->TODO
-      mitk::BaseGeometry::Pointer geo = m_SelectedImageNode->GetData()->GetGeometry();
-      mitk::Point3D indexPos;
-      geo->WorldToIndex(pos,indexPos);
+    this->GetSliceFromMarkerPosition();
+    mitk::NavigationData::Pointer navData = m_TrackingDeviceSource->GetOutput();
+    mitk::Point3D pos = navData->GetPosition();
+    //Bild muss im DataManager ausgewählt sein -> besser: einmal als member variable kopieren ->TODO
+    mitk::BaseGeometry::Pointer geo = m_SelectedImageNode->GetData()->GetGeometry();
+    mitk::Point3D indexPos;
+    geo->WorldToIndex(pos,indexPos);
 
-      std::cout << "INDEXPOS: X: " << indexPos[0] << " Y: " << indexPos[1] << " Z: " << indexPos[2] << std::endl;
+    std::cout << "INDEXPOS: X: " << indexPos[0] << " Y: " << indexPos[1] << " Z: " << indexPos[2] << std::endl;
 
-      mitk::Image::Pointer image = dynamic_cast<mitk::Image*>(m_SelectedImageNode->GetData());
+    mitk::Image::Pointer image = dynamic_cast<mitk::Image*>(m_SelectedImageNode->GetData());
 
-      mitk::ImageSliceSelector::Pointer sel = mitk::ImageSliceSelector::New();
-      sel->SetInput(image);
-      sel->SetSliceNr(indexPos[2]);
-      sel->Update();
+    mitk::ImageSliceSelector::Pointer sel = mitk::ImageSliceSelector::New();
+    sel->SetInput(image);
+    sel->SetSliceNr(indexPos[2]);
+    sel->Update();
 
-      mitk::Image::Pointer sl = sel->GetOutput();
+    mitk::Image::Pointer sl = sel->GetOutput();
 
-      m_SlicedImage->SetData(sl);
+    m_SlicedImage->SetData(sl);
 
-      mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+    mitk::RenderingManager::GetInstance()->RequestUpdateAll();
   }
 
   mitk::RenderingManager::GetInstance()->RequestUpdateAll();  //update the render windows
@@ -424,12 +427,12 @@ void ArucoTestView::OnTimer()
 
 void ArucoTestView::Start()
 {
-//  m_VideoSource->SetVideoCameraInput(0);
-//  m_ArUcoTrackingDevice->setVideoSource(m_VideoSource);
+  //  m_VideoSource->SetVideoCameraInput(0);
+  //  m_ArUcoTrackingDevice->setVideoSource(m_VideoSource);
   m_VideoSource->StartCapturing();
 
   int hertz = 200;//m_Controls->UpdateRate->text().toInt();
-//  int updateTime = itk::Math::Round( static_cast<double>(1000.0/hertz) );
+  //  int updateTime = itk::Math::Round( static_cast<double>(1000.0/hertz) );
   int updateTime = static_cast<int>(static_cast<double>(1000.0/hertz));
 
   // resets the whole background
@@ -442,12 +445,12 @@ void ArucoTestView::Start()
   m_VideoBackground->Enable();
 
   // Setup aruco
-//  TheIntrinsicFile="/home/riecker/Development/aruco/out_camera_data.xml";
+  //  TheIntrinsicFile="/home/riecker/Development/aruco/out_camera_data.xml";
   TheIntrinsicFile="/home/riecker/Development/src/Seminar/Plugins/org.mitk.gui.qt.aruco/out_camera_data.xml";
   if (TheIntrinsicFile!="") {
     TheCameraParameters.readFromXMLFile(TheIntrinsicFile);
-//    TheCameraParameters.resize(m_VideoSource->GetImage().size());
-//    TheMarkerSize = 4;
+    //    TheCameraParameters.resize(m_VideoSource->GetImage().size());
+    //    TheMarkerSize = 4;
   }
   //Configure other parameters
   if (ThePyrDownLevel>0)
@@ -469,139 +472,139 @@ CameraParameters CP;
 void ArucoTestView::NewFrameAvailable(mitk::VideoSource*)
 {
   TheInputImage = m_VideoSource->GetImage();
-//  cv::Mat* Image = new cv::Mat(m_VideoSource->GetCurrentFrame());
+  //  cv::Mat* Image = new cv::Mat(m_VideoSource->GetCurrentFrame());
 
-//  IplImage* test;
-//  m_VideoSource->GetCurrentFrameAsOpenCVImage(test);
-//  cv::Mat im = test;
-//  cv::imshow("test",im);
+  //  IplImage* test;
+  //  m_VideoSource->GetCurrentFrameAsOpenCVImage(test);
+  //  cv::Mat im = test;
+  //  cv::imshow("test",im);
 
-//  IplImage* x;
-//  x = const_cast<IplImage*>(m_VideoSource->GetCurrentFrame());
-//  cv::Mat im = x;
-//  cv::imshow("haha",im);
+  //  IplImage* x;
+  //  x = const_cast<IplImage*>(m_VideoSource->GetCurrentFrame());
+  //  cv::Mat im = x;
+  //  cv::imshow("haha",im);
 
-//  cv::Point p;
-//  p.x = 0;
-//  p.y = 0;
-//  cv::circle(*Image,p,20,Scalar(255,0,0),3);
+  //  cv::Point p;
+  //  p.x = 0;
+  //  p.y = 0;
+  //  cv::circle(*Image,p,20,Scalar(255,0,0),3);
   //TheVideoCapturer.retrieve( TheInputImage);
   //copy image
 
-//  double tick = (double)getTickCount();//for checking the speed
+  //  double tick = (double)getTickCount();//for checking the speed
 
   //Detection of markers in the image passed
   MDetector.detect(TheInputImage,TheMarkers,TheCameraParameters,TheMarkerSize);
 
   for(int i=0; i<TheMarkers.size();i++){
-      Marker marker = TheMarkers.at(i);
-      if(marker.id == 900)
-      {
-          double pos[3];
-          double orient[4];
-          marker.OgreGetPoseParameters(pos,orient);
+    Marker marker = TheMarkers.at(i);
+    if(marker.id == 900)
+    {
+      double pos[3];
+      double orient[4];
+      marker.OgreGetPoseParameters(pos,orient);
 
-          focalPoint = pos;
+      focalPoint = pos;
 
-          mitk::Point3D p;
-          p[0]=marker.Tvec.at<double>(0,0);
-          p[1]=marker.Tvec.at<double>(1,0);
-          p[2]=marker.Tvec.at<double>(2,0);
+      mitk::Point3D p;
+      p[0]=marker.Tvec.at<double>(0,0);
+      p[1]=marker.Tvec.at<double>(1,0);
+      p[2]=marker.Tvec.at<double>(2,0);
 
-          mitk::PointSet::Pointer ps = mitk::PointSet::New();
-          ps->InsertPoint(0, p);
+      mitk::PointSet::Pointer ps = mitk::PointSet::New();
+      ps->InsertPoint(0, p);
 
-//          mitk::DataNode::Pointer node = mitk::DataNode::New();
-//          node->SetName("TestCameraVector");
-//          node->SetData(ps);
-//          this->GetDataStorage()->Add(node);
+      //          mitk::DataNode::Pointer node = mitk::DataNode::New();
+      //          node->SetName("TestCameraVector");
+      //          node->SetData(ps);
+      //          this->GetDataStorage()->Add(node);
 
-          double position[3];
-          double orientation[4];
-          //hier kommen 3D koordinaten von der ogre methode ?! funktioniert nur für marker ?
-          marker.OgreGetPoseParameters(position,orientation);
+      double position[3];
+      double orientation[4];
+      //hier kommen 3D koordinaten von der ogre methode ?! funktioniert nur für marker ?
+      marker.OgreGetPoseParameters(position,orientation);
 
-          markerPos = position;
+      markerPos = position;
 
-          pTvec = marker.Tvec;
-          pRvec = marker.Rvec;
+      pTvec = marker.Tvec;
+      pRvec = marker.Rvec;
 
-//          cv::Point3f tmp = TheCameraParameters.getCameraLocation(marker.Rvec, marker.Tvec);
-//          std::cout << "EYE : " << tmp.x << " " << tmp.y << " " << tmp.z << std::endl;
+      //          cv::Point3f tmp = TheCameraParameters.getCameraLocation(marker.Rvec, marker.Tvec);
+      //          std::cout << "EYE : " << tmp.x << " " << tmp.y << " " << tmp.z << std::endl;
 
-          //+ oder -
-          camPos[0]=position[0]-marker.Tvec.at<double>(0,0);
-          camPos[1]=position[1]-marker.Tvec.at<double>(1,0);
-          camPos[2]=position[2]-marker.Tvec.at<double>(2,0);
+      //+ oder -
+      camPos[0]=position[0]-marker.Tvec.at<double>(0,0);
+      camPos[1]=position[1]-marker.Tvec.at<double>(1,0);
+      camPos[2]=position[2]-marker.Tvec.at<double>(2,0);
 
-          std::cout << "MarPos: " << position[0] << " " << position[1] << " " << position[2] << std::endl;
-          std::cout << "TvePos: " << marker.Tvec.at<double>(0,0) << " " << marker.Tvec.at<double>(0,1) << " " << marker.Tvec.at<double>(0,2) << std::endl;// Zugriff funktioniert so nicht!
-          std::cout << "Control:" << marker.Tvec << std::endl;
-          std::cout << "CamPos: " << camPos[0] << " " << camPos[1] << " " << camPos[2] << std::endl;
+      std::cout << "MarPos: " << position[0] << " " << position[1] << " " << position[2] << std::endl;
+      std::cout << "TvePos: " << marker.Tvec.at<double>(0,0) << " " << marker.Tvec.at<double>(0,1) << " " << marker.Tvec.at<double>(0,2) << std::endl;// Zugriff funktioniert so nicht!
+      std::cout << "Control:" << marker.Tvec << std::endl;
+      std::cout << "CamPos: " << camPos[0] << " " << camPos[1] << " " << camPos[2] << std::endl;
 
-          cv::Rodrigues(marker.Rvec,ExtrinsicRotation);
-          ExtrinsicTranslation = marker.Tvec;
-          cv::Mat inv = ExtrinsicRotation.inv();
+      cv::Rodrigues(marker.Rvec,ExtrinsicRotation);
+      ExtrinsicTranslation = marker.Tvec;
+      cv::Mat inv = ExtrinsicRotation.inv();
 
-          cv::Mat focalvec = inv * ExtrinsicTranslation;
+      cv::Mat focalvec = inv * ExtrinsicTranslation;
 
-          focalPoint[0] = camPos[0] - focalvec.at<double>(0,0);
-          focalPoint[1] = camPos[1] - focalvec.at<double>(1,0);
-          focalPoint[2] = camPos[2] - focalvec.at<double>(2,0);
+      focalPoint[0] = camPos[0] - focalvec.at<double>(0,0);
+      focalPoint[1] = camPos[1] - focalvec.at<double>(1,0);
+      focalPoint[2] = camPos[2] - focalvec.at<double>(2,0);
 
-//          std::cout << "MAT" << std::endl << ExtrinsicRotation << std::endl;
-//          std::cout << "INV" << std::endl << inv << std::endl;
+      //          std::cout << "MAT" << std::endl << ExtrinsicRotation << std::endl;
+      //          std::cout << "INV" << std::endl << inv << std::endl;
 
-//          cv::Mat r = ExtrinsicRotation * ExtrinsicTranslation;
+      //          cv::Mat r = ExtrinsicRotation * ExtrinsicTranslation;
 
-//          camPos[0]=position[0]+r.at<double>(0,0);
-//          camPos[1]=position[1]+r.at<double>(1,0);
-//          camPos[2]=position[2]+r.at<double>(2,0);
+      //          camPos[0]=position[0]+r.at<double>(0,0);
+      //          camPos[1]=position[1]+r.at<double>(1,0);
+      //          camPos[2]=position[2]+r.at<double>(2,0);
 
-//          std::cout << "TRANS: " << ExtrinsicTranslation << std::endl;
-//          std::cout << "ROTAT: " << ExtrinsicRotation << std::endl;
-//          std::cout << "MAT: " << r << std::endl;
+      //          std::cout << "TRANS: " << ExtrinsicTranslation << std::endl;
+      //          std::cout << "ROTAT: " << ExtrinsicRotation << std::endl;
+      //          std::cout << "MAT: " << r << std::endl;
 
-          ExtrinsicTransformation->SetElement(0,0,ExtrinsicRotation.at<double>(0,0));
-          ExtrinsicTransformation->SetElement(1,0,ExtrinsicRotation.at<double>(1,0));
-          ExtrinsicTransformation->SetElement(2,0,ExtrinsicRotation.at<double>(2,0));
-          ExtrinsicTransformation->SetElement(0,1,ExtrinsicRotation.at<double>(0,1));
-          ExtrinsicTransformation->SetElement(1,1,ExtrinsicRotation.at<double>(1,1));
-          ExtrinsicTransformation->SetElement(2,1,ExtrinsicRotation.at<double>(2,1));
-          ExtrinsicTransformation->SetElement(0,2,ExtrinsicRotation.at<double>(0,2));
-          ExtrinsicTransformation->SetElement(1,2,ExtrinsicRotation.at<double>(1,2));
-          ExtrinsicTransformation->SetElement(2,2,ExtrinsicRotation.at<double>(2,2));
+      ExtrinsicTransformation->SetElement(0,0,ExtrinsicRotation.at<double>(0,0));
+      ExtrinsicTransformation->SetElement(1,0,ExtrinsicRotation.at<double>(1,0));
+      ExtrinsicTransformation->SetElement(2,0,ExtrinsicRotation.at<double>(2,0));
+      ExtrinsicTransformation->SetElement(0,1,ExtrinsicRotation.at<double>(0,1));
+      ExtrinsicTransformation->SetElement(1,1,ExtrinsicRotation.at<double>(1,1));
+      ExtrinsicTransformation->SetElement(2,1,ExtrinsicRotation.at<double>(2,1));
+      ExtrinsicTransformation->SetElement(0,2,ExtrinsicRotation.at<double>(0,2));
+      ExtrinsicTransformation->SetElement(1,2,ExtrinsicRotation.at<double>(1,2));
+      ExtrinsicTransformation->SetElement(2,2,ExtrinsicRotation.at<double>(2,2));
 
-          ExtrinsicTransformation->SetElement(0,3,ExtrinsicTranslation.at<double>(0,0)*(-1));
-          ExtrinsicTransformation->SetElement(1,3,ExtrinsicTranslation.at<double>(1,0)*(-1));
-          ExtrinsicTransformation->SetElement(2,3,ExtrinsicTranslation.at<double>(2,0)*(-1));
+      ExtrinsicTransformation->SetElement(0,3,ExtrinsicTranslation.at<double>(0,0)*(-1));
+      ExtrinsicTransformation->SetElement(1,3,ExtrinsicTranslation.at<double>(1,0)*(-1));
+      ExtrinsicTransformation->SetElement(2,3,ExtrinsicTranslation.at<double>(2,0)*(-1));
 
-          ExtrinsicTransformation->SetElement(3,0,0);
-          ExtrinsicTransformation->SetElement(3,1,0);
-          ExtrinsicTransformation->SetElement(3,2,0);
-          ExtrinsicTransformation->SetElement(3,3,1);
+      ExtrinsicTransformation->SetElement(3,0,0);
+      ExtrinsicTransformation->SetElement(3,1,0);
+      ExtrinsicTransformation->SetElement(3,2,0);
+      ExtrinsicTransformation->SetElement(3,3,1);
 
-//          ExtrinsicTransformation->Print(std::cout);
+      //          ExtrinsicTransformation->Print(std::cout);
 
-//          std::cout << "ROTATION: " << ExtrinsicRotation << std::endl;
-//          std::cout << "TRANSLATION: " << ExtrinsicTranslation << std::endl;
+      //          std::cout << "ROTATION: " << ExtrinsicRotation << std::endl;
+      //          std::cout << "TRANSLATION: " << ExtrinsicTranslation << std::endl;
 
-//          cv::Mat extrinsics;
-//          extrinsics.create(4,4,0.0);
-//          extrinsics
-          //Kamera-Position ist MarkerPos + Translation * Rotation
-      }
+      //          cv::Mat extrinsics;
+      //          extrinsics.create(4,4,0.0);
+      //          extrinsics
+      //Kamera-Position ist MarkerPos + Translation * Rotation
+    }
   }
 
   //check the speed by calculating the mean speed of all iterations
-//  AvrgTime.first+=((double)getTickCount()-tick)/getTickFrequency();
-//  AvrgTime.second++;
-//  cout<<"Time detection="<<1000*AvrgTime.first/AvrgTime.second<<" milliseconds"<<endl;
+  //  AvrgTime.first+=((double)getTickCount()-tick)/getTickFrequency();
+  //  AvrgTime.second++;
+  //  cout<<"Time detection="<<1000*AvrgTime.first/AvrgTime.second<<" milliseconds"<<endl;
 
   TheInputImage.copyTo(TheInputImageCopy);
   for (unsigned int i=0;i<TheMarkers.size();i++) {
     cout<<"MARKER-NR:"<<TheMarkers[i]<<endl;
-//    TheMarkers[i].draw(TheInputImageCopy,Scalar(0,0,255),1);
+    //    TheMarkers[i].draw(TheInputImageCopy,Scalar(0,0,255),1);
   }
   //print other rectangles that contains no valid markers
   /**     for (unsigned int i=0;i<MDetector.getCandidates().size();i++) {
@@ -610,14 +613,14 @@ void ArucoTestView::NewFrameAvailable(mitk::VideoSource*)
   }*/
 
   if (  TheCameraParameters.isValid())
-//    for (unsigned int i=0;i<TheMarkers.size();i++) {
-//      CvDrawingUtils::draw3dCube(TheInputImageCopy,TheMarkers[i],TheCameraParameters);
-//      CvDrawingUtils::draw3dAxis(TheInputImageCopy,TheMarkers[i],TheCameraParameters);
-//    }
+    //    for (unsigned int i=0;i<TheMarkers.size();i++) {
+    //      CvDrawingUtils::draw3dCube(TheInputImageCopy,TheMarkers[i],TheCameraParameters);
+    //      CvDrawingUtils::draw3dAxis(TheInputImageCopy,TheMarkers[i],TheCameraParameters);
+    //    }
     cout<<endl<<endl;
-//    cv::imshow("in",TheInputImageCopy);
-//    cv::imshow("thres",MDetector.getThresholdedImage());
-/*
+  //    cv::imshow("in",TheInputImageCopy);
+  //    cv::imshow("thres",MDetector.getThresholdedImage());
+  /*
         mitk::NavigationData::Pointer navData = m_TrackingDeviceSource->GetOutput();
         mitk::Point3D pos = navData->GetPosition();
 //        Bild muss im DataManager ausgewählt sein -> besser: einmal als member variable kopieren ->TODO
@@ -629,108 +632,108 @@ void ArucoTestView::NewFrameAvailable(mitk::VideoSource*)
 
 void ArucoTestView::DoImageProcessing()
 {
-    TheVideoCapturer.open(-1);
+  TheVideoCapturer.open(-1);
 
-        //check video is open
-        if (!TheVideoCapturer.isOpened()) {
-            cerr<<"Could not open video"<<endl;
-            return;
-        }
+  //check video is open
+  if (!TheVideoCapturer.isOpened()) {
+    cerr<<"Could not open video"<<endl;
+    return;
+  }
 
-        //read first image to get the dimensions
-        TheVideoCapturer>>TheInputImage;
+  //read first image to get the dimensions
+  TheVideoCapturer>>TheInputImage;
 
-        //read camera parameters if passed
-        if (TheIntrinsicFile!="") {
-            TheCameraParameters.readFromXMLFile(TheIntrinsicFile);
-            TheCameraParameters.resize(TheInputImage.size());
-        }
-        //Configure other parameters
-        if (ThePyrDownLevel>0)
-            MDetector.pyrDown(ThePyrDownLevel);
+  //read camera parameters if passed
+  if (TheIntrinsicFile!="") {
+    TheCameraParameters.readFromXMLFile(TheIntrinsicFile);
+    TheCameraParameters.resize(TheInputImage.size());
+  }
+  //Configure other parameters
+  if (ThePyrDownLevel>0)
+    MDetector.pyrDown(ThePyrDownLevel);
 
-        //Create gui
-        cv::namedWindow("thres",1);
-        cv::namedWindow("in",1);
-        MDetector.getThresholdParams( ThresParam1,ThresParam2);
-        MDetector.setCornerRefinementMethod(MarkerDetector::LINES);
-        iThresParam1=ThresParam1;
-        iThresParam2=ThresParam2;
-        cv::createTrackbar("ThresParam1", "in",&iThresParam1, 13, cvTackBarEvents);
-        cv::createTrackbar("ThresParam2", "in",&iThresParam2, 13, cvTackBarEvents);
+  //Create gui
+  cv::namedWindow("thres",1);
+  cv::namedWindow("in",1);
+  MDetector.getThresholdParams( ThresParam1,ThresParam2);
+  MDetector.setCornerRefinementMethod(MarkerDetector::LINES);
+  iThresParam1=ThresParam1;
+  iThresParam2=ThresParam2;
+  cv::createTrackbar("ThresParam1", "in",&iThresParam1, 13, cvTackBarEvents);
+  cv::createTrackbar("ThresParam2", "in",&iThresParam2, 13, cvTackBarEvents);
 
-        char key=0;
-        int index=0;
-        //a single grab:
-        TheVideoCapturer.grab();
-        //capture until press ESC or until the end of the video
-//        while ( key!=27 && TheVideoCapturer.grab())
-        {
-            TheVideoCapturer.retrieve( TheInputImage);
-            //copy image
+  char key=0;
+  int index=0;
+  //a single grab:
+  TheVideoCapturer.grab();
+  //capture until press ESC or until the end of the video
+  //        while ( key!=27 && TheVideoCapturer.grab())
+  {
+    TheVideoCapturer.retrieve( TheInputImage);
+    //copy image
 
-            index++; //number of images captured
-            double tick = (double)getTickCount();//for checking the speed
-            //Detection of markers in the image passed
-            MDetector.detect(TheInputImage,TheMarkers,TheCameraParameters,TheMarkerSize);
-            //chekc the speed by calculating the mean speed of all iterations
-            AvrgTime.first+=((double)getTickCount()-tick)/getTickFrequency();
-            AvrgTime.second++;
-            cout<<"Time detection="<<1000*AvrgTime.first/AvrgTime.second<<" milliseconds"<<endl;
+    index++; //number of images captured
+    double tick = (double)getTickCount();//for checking the speed
+    //Detection of markers in the image passed
+    MDetector.detect(TheInputImage,TheMarkers,TheCameraParameters,TheMarkerSize);
+    //chekc the speed by calculating the mean speed of all iterations
+    AvrgTime.first+=((double)getTickCount()-tick)/getTickFrequency();
+    AvrgTime.second++;
+    cout<<"Time detection="<<1000*AvrgTime.first/AvrgTime.second<<" milliseconds"<<endl;
 
-            //print marker info and draw the markers in image
-            TheInputImage.copyTo(TheInputImageCopy);
-            for (unsigned int i=0;i<TheMarkers.size();i++) {
-                cout<<TheMarkers[i]<<endl;
-                TheMarkers[i].draw(TheInputImageCopy,Scalar(0,0,255),1);
-            }
-            //print other rectangles that contains no valid markers
-       /**     for (unsigned int i=0;i<MDetector.getCandidates().size();i++) {
+    //print marker info and draw the markers in image
+    TheInputImage.copyTo(TheInputImageCopy);
+    for (unsigned int i=0;i<TheMarkers.size();i++) {
+      cout<<TheMarkers[i]<<endl;
+      TheMarkers[i].draw(TheInputImageCopy,Scalar(0,0,255),1);
+    }
+    //print other rectangles that contains no valid markers
+    /**     for (unsigned int i=0;i<MDetector.getCandidates().size();i++) {
                 aruco::Marker m( MDetector.getCandidates()[i],999);
                 m.draw(TheInputImageCopy,cv::Scalar(255,0,0));
             }*/
 
-            //draw a 3d cube in each marker if there is 3d info
-            if (  TheCameraParameters.isValid())
-                for (unsigned int i=0;i<TheMarkers.size();i++) {
-                    CvDrawingUtils::draw3dCube(TheInputImageCopy,TheMarkers[i],TheCameraParameters);
-                    CvDrawingUtils::draw3dAxis(TheInputImageCopy,TheMarkers[i],TheCameraParameters);
-                }
-            //DONE! Easy, right?
-            cout<<endl<<endl<<endl;
-            //show input with augmented information and  the thresholded image
-            cv::imshow("in",TheInputImageCopy);
-            cv::imshow("thres",MDetector.getThresholdedImage());
-        }
+    //draw a 3d cube in each marker if there is 3d info
+    if (  TheCameraParameters.isValid())
+      for (unsigned int i=0;i<TheMarkers.size();i++) {
+        CvDrawingUtils::draw3dCube(TheInputImageCopy,TheMarkers[i],TheCameraParameters);
+        CvDrawingUtils::draw3dAxis(TheInputImageCopy,TheMarkers[i],TheCameraParameters);
+      }
+    //DONE! Easy, right?
+    cout<<endl<<endl<<endl;
+    //show input with augmented information and  the thresholded image
+    cv::imshow("in",TheInputImageCopy);
+    cv::imshow("thres",MDetector.getThresholdedImage());
+  }
 }
 
 void ArucoTestView::GetSliceFromMarkerPosition()
 {
   // disables the 3D view for the ct image, because we need it for our
   // sliced plane which will only be visible in the 3D view?
-//  m_SelectedImageNode->SetVisibility(false, mitk::BaseRenderer::GetInstance
-//          ( mitk::BaseRenderer::GetRenderWindowByName("stdmulti.widget4")));
+  //  m_SelectedImageNode->SetVisibility(false, mitk::BaseRenderer::GetInstance
+  //          ( mitk::BaseRenderer::GetRenderWindowByName("stdmulti.widget4")));
   m_SelectedImageNode->SetVisibility(false);
 
   mitk::Image::Pointer image = dynamic_cast<mitk::Image*>(m_SelectedImageNode->GetData());
   mitk::ExtractSliceFilter::Pointer sliceFilter = mitk::ExtractSliceFilter::New();
 
-//  mitk::PlaneGeometry::Pointer planeGeometry = mitk::PlaneGeometry::New();
-//  planeGeometry->SetImageGeometry(image);
+  //  mitk::PlaneGeometry::Pointer planeGeometry = mitk::PlaneGeometry::New();
+  //  planeGeometry->SetImageGeometry(image);
 
   QmitkRenderWindow* renderWindow = this->GetRenderWindowPart()->GetQmitkRenderWindow("axial");
-//  unsigned int pos = renderWindow->GetSliceNavigationController()->GetSlice()->GetPos();
+  //  unsigned int pos = renderWindow->GetSliceNavigationController()->GetSlice()->GetPos();
   mitk::PlaneGeometry::ConstPointer geometry = renderWindow->GetSliceNavigationController()->GetCurrentPlaneGeometry();
 
-//  mitk::SliceNavigationController::Pointer controller = mitk::SliceNavigationController::New();
-//  controller->SetInputWorldGeometry(image->GetGeometry());
-//  controller->SetViewDirection(mitk::SliceNavigationController::Axial);
-//  controller->Update();
-//  controller->GetSlice()->SetPos(pos);
+  //  mitk::SliceNavigationController::Pointer controller = mitk::SliceNavigationController::New();
+  //  controller->SetInputWorldGeometry(image->GetGeometry());
+  //  controller->SetViewDirection(mitk::SliceNavigationController::Axial);
+  //  controller->Update();
+  //  controller->GetSlice()->SetPos(pos);
 
-//  image->GetSlicedGeometry()->GetPlaneGeometry();
+  //  image->GetSlicedGeometry()->GetPlaneGeometry();
 
-//  mitk::BaseRenderer::GetRenderWindowByName("stdmulti.widget1");
+  //  mitk::BaseRenderer::GetRenderWindowByName("stdmulti.widget1");
 
   sliceFilter->SetInput(image);
   sliceFilter->SetWorldGeometry(geometry);
@@ -740,91 +743,91 @@ void ArucoTestView::GetSliceFromMarkerPosition()
 
   m_SlicedImage->SetData(imageSlice);
 
-//  mitk::DataNode::Pointer slice = mitk::DataNode::New();
-//  slice->SetData(imageSlice);
-//  slice->SetName("Tracked Slice");
-//  slice->SetVisibility(true, mitk::BaseRenderer::GetInstance
-//          ( mitk::BaseRenderer::GetRenderWindowByName("stdmulti.widget1")));
-//  slice->SetVisibility(true, mitk::BaseRenderer::GetInstance
-//          ( mitk::BaseRenderer::GetRenderWindowByName("stdmulti.widget4")));
-//  this->GetDataStorage()->Add(slice);
+  //  mitk::DataNode::Pointer slice = mitk::DataNode::New();
+  //  slice->SetData(imageSlice);
+  //  slice->SetName("Tracked Slice");
+  //  slice->SetVisibility(true, mitk::BaseRenderer::GetInstance
+  //          ( mitk::BaseRenderer::GetRenderWindowByName("stdmulti.widget1")));
+  //  slice->SetVisibility(true, mitk::BaseRenderer::GetInstance
+  //          ( mitk::BaseRenderer::GetRenderWindowByName("stdmulti.widget4")));
+  //  this->GetDataStorage()->Add(slice);
 
   mitk::RenderingManager::GetInstance()->RequestUpdateAll();
 }
 
 void cvTackBarEvents(int pos,void*)
 {
-    if (iThresParam1<3) iThresParam1=3;
-    if (iThresParam1%2!=1) iThresParam1++;
-    if (ThresParam2<1) ThresParam2=1;
-    ThresParam1=iThresParam1;
-    ThresParam2=iThresParam2;
-    MDetector.setThresholdParams(ThresParam1,ThresParam2);
-    //recompute
-    MDetector.detect(TheInputImage,TheMarkers,TheCameraParameters);
-    TheInputImage.copyTo(TheInputImageCopy);
-    for (unsigned int i=0;i<TheMarkers.size();i++)	TheMarkers[i].draw(TheInputImageCopy,Scalar(0,0,255),1);
-    //print other rectangles that contains no valid markers
-    /*for (unsigned int i=0;i<MDetector.getCandidates().size();i++) {
+  if (iThresParam1<3) iThresParam1=3;
+  if (iThresParam1%2!=1) iThresParam1++;
+  if (ThresParam2<1) ThresParam2=1;
+  ThresParam1=iThresParam1;
+  ThresParam2=iThresParam2;
+  MDetector.setThresholdParams(ThresParam1,ThresParam2);
+  //recompute
+  MDetector.detect(TheInputImage,TheMarkers,TheCameraParameters);
+  TheInputImage.copyTo(TheInputImageCopy);
+  for (unsigned int i=0;i<TheMarkers.size();i++)	TheMarkers[i].draw(TheInputImageCopy,Scalar(0,0,255),1);
+  //print other rectangles that contains no valid markers
+  /*for (unsigned int i=0;i<MDetector.getCandidates().size();i++) {
         aruco::Marker m( MDetector.getCandidates()[i],999);
         m.draw(TheInputImageCopy,cv::Scalar(255,0,0));
     }*/
 
-//draw a 3d cube in each marker if there is 3d info
-    if (TheCameraParameters.isValid())
-        for (unsigned int i=0;i<TheMarkers.size();i++)
-            CvDrawingUtils::draw3dCube(TheInputImageCopy,TheMarkers[i],TheCameraParameters);
+  //draw a 3d cube in each marker if there is 3d info
+  if (TheCameraParameters.isValid())
+    for (unsigned int i=0;i<TheMarkers.size();i++)
+      CvDrawingUtils::draw3dCube(TheInputImageCopy,TheMarkers[i],TheCameraParameters);
 
-    cv::imshow("in",TheInputImageCopy);
-    cv::imshow("thres",MDetector.getThresholdedImage());
+  cv::imshow("in",TheInputImageCopy);
+  cv::imshow("thres",MDetector.getThresholdedImage());
 }
 
 void ArucoTestView::CalibrateProbe()
 {
-    TheInputImage = m_VideoSource->GetImage();
+  TheInputImage = m_VideoSource->GetImage();
 
-    //! Board Detection from here
-    BC.readFromFile("/home/riecker/Downloads/aruco_testproject/TestData/chessboardinfo_pix.yml");
-    CP.readFromXMLFile("/home/riecker/Downloads/aruco_testproject/TestData/out_camera_data.xml");
+  //! Board Detection from here
+  BC.readFromFile("/home/riecker/Downloads/aruco_testproject/TestData/chessboardinfo_pix.yml");
+  CP.readFromXMLFile("/home/riecker/Downloads/aruco_testproject/TestData/out_camera_data.xml");
 
-    BDetector.setParams(BC,CP,100);
-    BDetector.detect(TheInputImage);
-    Board b = BDetector.getDetectedBoard();
+  BDetector.setParams(BC,CP,100);
+  BDetector.detect(TheInputImage);
+  Board b = BDetector.getDetectedBoard();
 
-    double boardPosTmp[3];
-    double orientation[4];
+  double boardPosTmp[3];
+  double orientation[4];
 
-    if(!b.empty())
-    {
-        b.OgreGetPoseParameters(boardPosTmp,orientation);
-    }
-    //! Board Detection until here
+  if(!b.empty())
+  {
+    b.OgreGetPoseParameters(boardPosTmp,orientation);
+  }
+  //! Board Detection until here
 
-    mitk::NavigationData::Pointer navData = m_TrackingDeviceSource->GetOutput();
-    mitk::Point3D probePos = navData->GetPosition();
-    //hier theoretisch noch die orientation holen und als rotation mitberechnen
-    mitk::Point3D boardPos;
-    boardPos[0]=boardPosTmp[0]/100; boardPos[1]=boardPosTmp[1]/100; boardPos[2]=boardPosTmp[2]/100;
+  mitk::NavigationData::Pointer navData = m_TrackingDeviceSource->GetOutput();
+  mitk::Point3D probePos = navData->GetPosition();
+  //hier theoretisch noch die orientation holen und als rotation mitberechnen
+  mitk::Point3D boardPos;
+  boardPos[0]=boardPosTmp[0]/100; boardPos[1]=boardPosTmp[1]/100; boardPos[2]=boardPosTmp[2]/100;
 
-    cout << "BOARD POSITION: " << boardPos[0] << " - " << boardPos[1] << " - " << boardPos[2] << endl;
-    cout << "MARKER POSITION: " << probePos[0] << " - " << probePos[1] << " - " << probePos[2] << endl;
+  cout << "BOARD POSITION: " << boardPos[0] << " - " << boardPos[1] << " - " << boardPos[2] << endl;
+  cout << "MARKER POSITION: " << probePos[0] << " - " << probePos[1] << " - " << probePos[2] << endl;
 
-    // TODO Evaluieren ob das Ergebnis so stimmt
-    mitk::Vector3D offset = boardPos - probePos;
+  // TODO Evaluieren ob das Ergebnis so stimmt
+  mitk::Vector3D offset = boardPos - probePos;
 
-    m_ArUcoTrackingDevice->SetOffset(offset);
+  m_ArUcoTrackingDevice->SetOffset(offset);
 
-    //Probe Pos isn correct here need update from navData but it works fine - placed an output into
-    //the OnTimer function and its calibrated!
-    mitk::Point3D regisPos = navData->GetPosition();
-    cout << "PROBE POSITION: " << regisPos[0] << " - " << regisPos[1] << " - " << regisPos[2] << endl;
-    cout << "OFFSET: " << offset[0] << " - " << offset[1] << " - " << offset[2] << endl;
+  //Probe Pos isn correct here need update from navData but it works fine - placed an output into
+  //the OnTimer function and its calibrated!
+  mitk::Point3D regisPos = navData->GetPosition();
+  cout << "PROBE POSITION: " << regisPos[0] << " - " << regisPos[1] << " - " << regisPos[2] << endl;
+  cout << "OFFSET: " << offset[0] << " - " << offset[1] << " - " << offset[2] << endl;
 
-    mitk::DataNode::Pointer testPositionNode = mitk::DataNode::New();
-    mitk::PointSet::Pointer pointSet = mitk::PointSet::New();
-    pointSet->SetPoint(0,probePos);
-    testPositionNode->SetData(pointSet);
-    testPositionNode->SetName("Real_Position");
-    this->GetDataStorage()->Add(testPositionNode);
+  mitk::DataNode::Pointer testPositionNode = mitk::DataNode::New();
+  mitk::PointSet::Pointer pointSet = mitk::PointSet::New();
+  pointSet->SetPoint(0,probePos);
+  testPositionNode->SetData(pointSet);
+  testPositionNode->SetName("Real_Position");
+  this->GetDataStorage()->Add(testPositionNode);
 
 }
