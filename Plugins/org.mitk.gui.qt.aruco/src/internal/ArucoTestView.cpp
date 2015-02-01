@@ -161,6 +161,11 @@ void ArucoTestView::CameraTest()
   mitk::BaseRenderer* renderer = mitk::BaseRenderer::GetInstance(mitk::BaseRenderer::GetRenderWindowByName("stdmulti.widget4"));
   vtkRenderer* vtkRenderer = renderer->GetVtkRenderer();
   vtkCamera* camera = vtkRenderer->GetActiveCamera();
+
+  //The size of the renderwindows?!
+  vtkRenderer->GetSize(); /*or*/ int width, height; vtkRenderer->GetTiledSize(width,heigt);
+  renderer->GetSizeX(); renderer->GetSizeY();
+
   if(camera)
   {
     //        camera->SetPosition(camPos[0],camPos[1],camPos[2]);
@@ -195,6 +200,10 @@ void ArucoTestView::CamParamsTest()
 
   cv::Mat intrinsics = camParams.CameraMatrix;
   double focalLengthY = intrinsics.at<float>(1,1); //focalLengthX is at 0,0 of matrix
+
+  cv::Size sizeofCam = camParams.CamSize; //maybe here the X x Y Resolution of Cam Image
+
+  //here get the renderwindow size
 
   //Detection of markers in the image passed
   MDetector.detect(TheInputImage,TheMarkers,TheCameraParameters,200);
