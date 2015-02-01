@@ -200,8 +200,61 @@ void ArucoTestView::CamParamsTest()
 
   cv::Mat intrinsics = camParams.CameraMatrix;
   double focalLengthY = intrinsics.at<float>(1,1); //focalLengthX is at 0,0 of matrix
+  cv::Size sizeofCam = camParams.CamSize;
 
-  cv::Size sizeofCam = camParams.CamSize; //maybe here the X x Y Resolution of Cam Image
+  mitk::BaseRenderer* renderer = mitk::BaseRenderer::GetInstance(mitk::BaseRenderer::GetRenderWindowByName("stdmulti.widget4"));
+  vtkRenderer* vtkRenderer = renderer->GetVtkRenderer();
+  vtkCamera* vtkCamera = vtkRenderer->GetActiveCamera();
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  if(renderer->GetSizeY() != sizeofCam.height)
+  {
+      double factor = static_cast<double>(renderer->GetSizeY())/static_cast<double>(sizeofCam.height);
+      focalLengthY *= factor;
+  }
+
+  double viewAngle = 2 * atan( (renderer->GetSizeY()/2) / focalLengthY ) * 180 /vnl_math::pi;
+
+  vtkCamera->SetViewAngle(viewAngle);
+
+  double px = 0.0, width = 0.0, py = 0.0, height = 0.0;
+
+  if( renderer->GetSizeX() != sizeofCam.width || renderer->GetSizeY() != sizeofCam.height)
+  {
+      double factor = static_cast<double>(renderer->GetSizeY())/static_cast<double>(sizeofCam.height);
+      px = factor * _CameraIntrinsics->GetPrincipalPointX(); // todo principal Point X ?
+      width = renderer->GetSizeX();
+
+      int expectedWindowSize = cvRound(factor * static_cast<double>(sizeofCam.width));
+      if( expectedWindowSize != renderer->GetSizeX() )
+      {
+          int diffX = (renderer->GetSizeX() - expectedWindowSize) / 2;
+          px = px + diffX;
+      }
+
+      py = factor * _CameraIntrinsics->GetPrincipalPointY(); // TOdo
+      height = renderer->GetSizeY(); //that cant be correct ?!
+  }
+  else
+  {
+      px = _CameraIntrinsics->GetPrincipalPointX(); // todo
+      width = renderer->GetSizeX();
+
+      py = _CameraIntrinsics->GetPrincipalPointY(); // todo
+      height = renderer->GetSizeY();
+  }
+
+  double cx = width - px;
+  double cy = py;
+
+  double newCenterX = cx / ( ( width-1)/2 ) - 1 ; // todo whats window center
+  double newCenterY = cy / ( ( height-1)/2 ) - 1; // todo whats window center
+
+  vtkCamera->SetWindowCenter(newCenterX, newCenterY);
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+//  cv::Size sizeofCam = camParams.CamSize; //maybe here the X x Y Resolution of Cam Image
 
   //here get the renderwindow size
 
