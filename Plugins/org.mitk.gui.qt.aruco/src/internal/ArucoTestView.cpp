@@ -222,7 +222,7 @@ void ArucoTestView::CamParamsTest()
   if( renderer->GetSizeX() != sizeofCam.width || renderer->GetSizeY() != sizeofCam.height)
   {
       double factor = static_cast<double>(renderer->GetSizeY())/static_cast<double>(sizeofCam.height);
-      px = factor * _CameraIntrinsics->GetPrincipalPointX(); // todo principal Point X ?
+      px = factor * intrinsics.at<float>(0,2); // todo principal Point X ?
       width = renderer->GetSizeX();
 
       int expectedWindowSize = cvRound(factor * static_cast<double>(sizeofCam.width));
@@ -232,15 +232,15 @@ void ArucoTestView::CamParamsTest()
           px = px + diffX;
       }
 
-      py = factor * _CameraIntrinsics->GetPrincipalPointY(); // TOdo
+      py = factor * intrinsics.at<float>(1,2); // TOdo
       height = renderer->GetSizeY(); //that cant be correct ?!
   }
   else
   {
-      px = _CameraIntrinsics->GetPrincipalPointX(); // todo
+      px = intrinsics.at<float>(0,2); // todo
       width = renderer->GetSizeX();
 
-      py = _CameraIntrinsics->GetPrincipalPointY(); // todo
+      py = intrinsics.at<float>(1,2); // todo
       height = renderer->GetSizeY();
   }
 
