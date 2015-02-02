@@ -163,7 +163,7 @@ void ArucoTestView::CameraTest()
   vtkCamera* camera = vtkRenderer->GetActiveCamera();
 
   //The size of the renderwindows?!
-  vtkRenderer->GetSize(); /*or*/ int width, height; vtkRenderer->GetTiledSize(width,heigt);
+//  vtkRenderer->GetSize(); /*or*/ int* width, height; vtkRenderer->GetTiledSize(width,height);
   renderer->GetSizeX(); renderer->GetSizeY();
 
   if(camera)
@@ -259,6 +259,7 @@ void ArucoTestView::CamParamsTest()
   //here get the renderwindow size
 
   //Detection of markers in the image passed
+  /*
   MDetector.detect(TheInputImage,TheMarkers,TheCameraParameters,200);
 
   for(int i=0; i<TheMarkers.size();i++){
@@ -295,6 +296,7 @@ void ArucoTestView::CamParamsTest()
       //0.179 -0.984 0.004
     }
   }
+  */
 }
 
 void ArucoTestView::SetRefImage()
