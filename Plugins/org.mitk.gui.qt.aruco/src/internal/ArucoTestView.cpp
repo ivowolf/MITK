@@ -187,6 +187,10 @@ void ArucoTestView::CameraTest()
     //        camera->SetPosition(camPos[0],camPos[1],camPos[2]);
     camera->SetFocalPoint(0, 0, 0);
     camera->SetViewUp(0, 0, 1);
+
+    camera->SetPosition(0, 0, 0);
+    camera->SetFocalPoint(0, 0, 1); // hier mit - testen
+    camera->SetViewUp(0, 1, 0); // hier auch + alle kombinationen
   }
   vtkRenderer->ResetCameraClippingRange();
 }
