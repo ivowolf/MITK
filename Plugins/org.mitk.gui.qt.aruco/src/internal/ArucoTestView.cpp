@@ -415,7 +415,7 @@ void ArucoTestView::SetupArUcoTracker()
   //to manipulate rendering, e.g. the position and orientation as in our case.
   //  float scale[] = {10.0, 10.0, 10.0};
   mitk::Vector3D scale;
-  scale.Fill(2);
+  scale.Fill(5);
   cone->GetGeometry()->SetSpacing(scale);                       //scale it a little that so we can see something
   mitk::DataNode::Pointer node = mitk::DataNode::New(); //generate a new node to store the cone into
   //the DataStorage.
