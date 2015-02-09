@@ -230,8 +230,8 @@ void mitk::ArUcoTrackingDevice::TrackTools()
                 {
                     this->m_AllTools[0]->SetPosition(offsetPosition);
                 }
-
-                mitk::Quaternion mitkorientation(orientation[0], orientation[1], orientation[2], orientation[3]);
+                //[0 2 3 1] oder [1 2 3 0] oder [3 0 1 2]
+                mitk::Quaternion mitkorientation(orientation[3], orientation[2], orientation[0], orientation[1]);
                 this->m_AllTools[0]->SetOrientation(mitkorientation);
                 this->m_AllTools[0]->SetDataValid(true);
               }
