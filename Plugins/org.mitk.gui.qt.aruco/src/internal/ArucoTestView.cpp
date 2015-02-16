@@ -226,7 +226,7 @@ void ArucoTestView::CamParamsTest()
   if( renderer->GetSizeX() != sizeofCam.width || renderer->GetSizeY() != sizeofCam.height)
   {
       double factor = static_cast<double>(renderer->GetSizeY())/static_cast<double>(sizeofCam.height);
-      px = factor * intrinsics.at<float>(0,2); // todo principal Point X ?
+      px = factor * intrinsics.at<float>(0,2);
       width = renderer->GetSizeX();
 
       int expectedWindowSize = cvRound(factor * static_cast<double>(sizeofCam.width));
@@ -236,23 +236,23 @@ void ArucoTestView::CamParamsTest()
           px = px + diffX;
       }
 
-      py = factor * intrinsics.at<float>(1,2); // TOdo
+      py = factor * intrinsics.at<float>(1,2);
       height = renderer->GetSizeY(); //that cant be correct ?!
   }
   else
   {
-      px = intrinsics.at<float>(0,2); // todo
+      px = intrinsics.at<float>(0,2);
       width = renderer->GetSizeX();
 
-      py = intrinsics.at<float>(1,2); // todo
+      py = intrinsics.at<float>(1,2);
       height = renderer->GetSizeY();
   }
 
   double cx = width - px;
   double cy = py;
 
-  double newCenterX = cx / ( ( width-1)/2 ) - 1 ; // todo whats window center
-  double newCenterY = cy / ( ( height-1)/2 ) - 1; // todo whats window center
+  double newCenterX = cx / ( ( width-1)/2 ) - 1 ;
+  double newCenterY = cy / ( ( height-1)/2 ) - 1;
 
   vtkCamera->SetWindowCenter(newCenterX, newCenterY);
 
@@ -316,7 +316,6 @@ void ArucoTestView::WorldToImageExtract()
 {
   //    mitk::NavigationData::Pointer navData = m_TrackingDeviceSource->GetOutput();
   //    mitk::Point3D pos = navData->GetPosition();
-  //Bild muss im DataManager ausgewählt sein -> besser: einmal als member variable kopieren ->TODO
   //    mitk::BaseGeometry::Pointer geo = m_SelectedImageNode->GetData()->GetGeometry();
   //    mitk::Point3D indexPos;
   //    geo->WorldToIndex(pos,indexPos);
@@ -383,7 +382,6 @@ void ArucoTestView::OnSelectionChanged( berry::IWorkbenchPart::Pointer /*source*
 
 void ArucoTestView::SetupArUcoTracker()
 {
-  // TODO color the label if the board is available
   m_Controls.boardDetectionLabel->setStyleSheet("QLabel { background-color : red;}");
   m_TrackingDeviceSource->SetTrackingDevice(m_ArUcoTrackingDevice);
   m_TrackingDeviceSource->RegisterAsMicroservice();
@@ -453,7 +451,7 @@ void ArucoTestView::SetupArUcoTracker()
   //Now have look at the OnTimer() method.
   mitk::RenderingManager::GetInstance()->InitializeViewsByBoundingObjects(this->GetDataStorageReference()->GetDataStorage());
 }
-
+#include <mitkPlaneGeometry.h>
 void ArucoTestView::OnTimer()
 {
   //Here we call the Update() method from the Visualization Filter. Internally the filter checks if
@@ -469,14 +467,13 @@ void ArucoTestView::OnTimer()
     this->GetSliceFromMarkerPosition();
     mitk::NavigationData::Pointer navData = m_TrackingDeviceSource->GetOutput();
     mitk::Point3D pos = navData->GetPosition();
-    //Bild muss im DataManager ausgewählt sein -> besser: einmal als member variable kopieren ->TODO
-    mitk::BaseGeometry::Pointer geo = m_SelectedImageNode->GetData()->GetGeometry();
+    mitk::BaseGeometry::Pointer geo = m_RefImage->GetGeometry();
     mitk::Point3D indexPos;
     geo->WorldToIndex(pos,indexPos);
 
     std::cout << "INDEXPOS: X: " << indexPos[0] << " Y: " << indexPos[1] << " Z: " << indexPos[2] << std::endl;
 
-    mitk::Image::Pointer image = dynamic_cast<mitk::Image*>(m_SelectedImageNode->GetData());
+    mitk::Image::Pointer image = m_RefImage->Clone();
 
     mitk::ImageSliceSelector::Pointer sel = mitk::ImageSliceSelector::New();
     sel->SetInput(image);
@@ -485,11 +482,46 @@ void ArucoTestView::OnTimer()
 
     mitk::Image::Pointer sl = sel->GetOutput();
 
+    sl->GetGeometry()->SetOrigin(pos);
+    //TODO: hier vllt noch eine Rotation des Bildes- Origin passt schon mal dann noch die Axial-Schicht mit sliden lassen
+
+    //####################### new extractslicefilter approach
+//    mitk::PlaneGeometry::Pointer plane = mitk::PlaneGeometry::New();
+
+//    plane->InitializeStandardPlane(image->GetGeometry(), mitk::PlaneGeometry::Axial, indexPos[2]);
+
+//    mitk::Point3D origin = plane->GetOrigin();
+//    mitk::Vector3D normal;
+//    normal = plane->GetNormal();
+
+
+//    normal.Normalize();
+
+//    origin += normal * 0.5;//pixelspacing is 1, so half the spacing is 0.5
+
+//    plane->SetOrigin(pos);
+
+//    mitk::ExtractSliceFilter::Pointer sliceFilter = mitk::ExtractSliceFilter::New();
+//    sliceFilter->SetInput(image);
+//    sliceFilter->SetWorldGeometry(plane);
+//    sliceFilter->Update();
+
+//    mitk::Image::Pointer sl = sliceFilter->GetOutput();
+    //#######################
+
+    //last try ...
+//    sl->GetGeometry()->SetIndexToWorldTransform(image->GetGeometry()->GetIndexToWorldTransform());
+
     m_SlicedImage->SetData(sl);
 
-    mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+//    this->GetRenderWindowPart()->GetQmitkRenderWindow("axial")->GetSliceNavigationController()->GetTime()->SetPos(0);
+
+    // axial-Renderwindow muss mitscrollen ?!
+
+//    mitk::RenderingManager::GetInstance()->RequestUpdateAll();
   }
 
+//  mitk::RenderingManager::GetInstance()->
   mitk::RenderingManager::GetInstance()->RequestUpdateAll();  //update the render windows
 }
 
@@ -539,7 +571,7 @@ CameraParameters CP;
 
 void ArucoTestView::NewFrameAvailable(mitk::VideoSource*)
 {
-  TheInputImage = m_VideoSource->GetImage();
+  TheInputImage = m_VideoSource->GetImage(); /*
   //  cv::Mat* Image = new cv::Mat(m_VideoSource->GetCurrentFrame());
 
   //  IplImage* test;
@@ -680,18 +712,17 @@ void ArucoTestView::NewFrameAvailable(mitk::VideoSource*)
   m.draw(TheInputImageCopy,cv::Scalar(255,0,0));
   }*/
 
-  if (  TheCameraParameters.isValid())
+//  if (  TheCameraParameters.isValid())
     //    for (unsigned int i=0;i<TheMarkers.size();i++) {
     //      CvDrawingUtils::draw3dCube(TheInputImageCopy,TheMarkers[i],TheCameraParameters);
     //      CvDrawingUtils::draw3dAxis(TheInputImageCopy,TheMarkers[i],TheCameraParameters);
     //    }
-    cout<<endl<<endl;
+//    cout<<endl<<endl;
   //    cv::imshow("in",TheInputImageCopy);
   //    cv::imshow("thres",MDetector.getThresholdedImage());
   /*
         mitk::NavigationData::Pointer navData = m_TrackingDeviceSource->GetOutput();
         mitk::Point3D pos = navData->GetPosition();
-//        Bild muss im DataManager ausgewählt sein -> besser: einmal als member variable kopieren ->TODO
         mitk::BaseGeometry::Pointer geo = m_SelectedImageNode->GetData()->GetGeometry();
         mitk::Point3D indexPos;
         geo->WorldToIndex(pos,indexPos);
@@ -880,7 +911,6 @@ void ArucoTestView::CalibrateProbe()
   cout << "BOARD POSITION: " << boardPos[0] << " - " << boardPos[1] << " - " << boardPos[2] << endl;
   cout << "MARKER POSITION: " << probePos[0] << " - " << probePos[1] << " - " << probePos[2] << endl;
 
-  // TODO Evaluieren ob das Ergebnis so stimmt
   mitk::Vector3D offset = boardPos - probePos;
 
   m_ArUcoTrackingDevice->SetOffset(offset);
