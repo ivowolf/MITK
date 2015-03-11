@@ -83,6 +83,7 @@ ArucoTestView::ArucoTestView()
   m_ToolStorage = mitk::NavigationToolStorage::New();
   m_SelectedImageNode = mitk::DataNode::New();
   m_SlicedImage = mitk::DataNode::New();
+  m_Transformation = mitk::AffineTransform3D::New();
   m_SlicedImage->SetName("SlicedImage");
   m_SlicedImage->SetVisibility(true, mitk::BaseRenderer::GetInstance
                                ( mitk::BaseRenderer::GetRenderWindowByName("stdmulti.widget1")));
@@ -117,6 +118,8 @@ void ArucoTestView::CreateQtPartControl( QWidget *parent )
   connect( m_Controls.btnSetImageGeo, SIGNAL(clicked()), this, SLOT(SetImageGeo()));
   connect( m_Controls.btnWorldToImage, SIGNAL(clicked()), this, SLOT(WorldToImageExtract()));
   connect( m_Controls.btnSetImage, SIGNAL(clicked()), this, SLOT(SetRefImage()));
+  connect( m_Controls.btnTransform, SIGNAL(clicked()), this, SLOT(SetTransformation()) );
+  connect( m_Controls.btnSliceSl, SIGNAL(clicked()), this, SLOT(TestSliceSelector()) );
 
   connect( m_Controls.btnTest, SIGNAL(clicked()), this, SLOT(CameraTest()) );
 
@@ -131,6 +134,22 @@ void ArucoTestView::CreateQtPartControl( QWidget *parent )
 
   m_VideoSource->SetVideoCameraInput(0);
   m_ArUcoTrackingDevice->SetVideoSource(m_VideoSource);
+}
+
+void ArucoTestView::TestSliceSelector()
+{
+    QmitkRenderWindow* renderwindow = this->GetRenderWindowPart()->GetQmitkRenderWindow("axial");
+    renderwindow->GetSliceNavigationController()->GetSlice()->SetPos(10);
+}
+
+void ArucoTestView::SetTransformation()
+{
+    mitk::Surface::Pointer surf = dynamic_cast<mitk::Surface*>(m_SelectedImageNode->GetData());
+    if(surf.IsNotNull())
+    {
+        m_Transformation = surf->GetGeometry()->GetIndexToWorldTransform()->Clone();
+        std::cout << "ist leer: " << m_Transformation.IsNull() << std::endl;
+    }
 }
 
 #include <vtkRenderer.h>
@@ -464,7 +483,7 @@ void ArucoTestView::OnTimer()
 
   if(m_Slicing)
   {
-    this->GetSliceFromMarkerPosition();
+//    this->GetSliceFromMarkerPosition();
     mitk::NavigationData::Pointer navData = m_TrackingDeviceSource->GetOutput();
     mitk::Point3D pos = navData->GetPosition();
     mitk::BaseGeometry::Pointer geo = m_RefImage->GetGeometry();
@@ -475,53 +494,40 @@ void ArucoTestView::OnTimer()
 
     mitk::Image::Pointer image = m_RefImage->Clone();
 
-    mitk::ImageSliceSelector::Pointer sel = mitk::ImageSliceSelector::New();
-    sel->SetInput(image);
-    sel->SetSliceNr(indexPos[2]);
-    sel->Update();
+    QmitkRenderWindow* renderwindow = this->GetRenderWindowPart()->GetQmitkRenderWindow("axial");
+    renderwindow->GetSliceNavigationController()->GetSlice()->SetPos(indexPos[2]);
 
-    mitk::Image::Pointer sl = sel->GetOutput();
+    QmitkRenderWindow* renderwindow2 = this->GetRenderWindowPart()->GetQmitkRenderWindow("sagittal");
 
-    sl->GetGeometry()->SetOrigin(pos);
-    //TODO: hier vllt noch eine Rotation des Bildes- Origin passt schon mal dann noch die Axial-Schicht mit sliden lassen
+//    mitk::ImageSliceSelector::Pointer sel = mitk::ImageSliceSelector::New();
+//    sel->SetInput(image);
+//    sel->SetSliceNr(indexPos[2]);
+//    sel->Update();
 
-    //####################### new extractslicefilter approach
+//    mitk::Image::Pointer sl = sel->GetOutput();
+
+
 //    mitk::PlaneGeometry::Pointer plane = mitk::PlaneGeometry::New();
-
-//    plane->InitializeStandardPlane(image->GetGeometry(), mitk::PlaneGeometry::Axial, indexPos[2]);
+//    plane->InitializeStandardPlane(image->GetGeometry(), mitk::PlaneGeometry::Axial, indexPos[2], false, false);
 
 //    mitk::Point3D origin = plane->GetOrigin();
 //    mitk::Vector3D normal;
+
 //    normal = plane->GetNormal();
-
-
 //    normal.Normalize();
+//    origin += normal * 0.5;
+//    plane->SetOrigin(origin);
 
-//    origin += normal * 0.5;//pixelspacing is 1, so half the spacing is 0.5
+//    mitk::ExtractSliceFilter::Pointer slicer = mitk::ExtractSliceFilter::New();
+//    slicer->SetInput(image);
+//    slicer->SetWorldGeometry(plane);
+//    slicer->Update();
 
-//    plane->SetOrigin(pos);
+//    mitk::Image::Pointer sl = slicer->GetOutput();
 
-//    mitk::ExtractSliceFilter::Pointer sliceFilter = mitk::ExtractSliceFilter::New();
-//    sliceFilter->SetInput(image);
-//    sliceFilter->SetWorldGeometry(plane);
-//    sliceFilter->Update();
-
-//    mitk::Image::Pointer sl = sliceFilter->GetOutput();
-    //#######################
-
-    //last try ...
-//    sl->GetGeometry()->SetIndexToWorldTransform(image->GetGeometry()->GetIndexToWorldTransform());
-
-    m_SlicedImage->SetData(sl);
-
-//    this->GetRenderWindowPart()->GetQmitkRenderWindow("axial")->GetSliceNavigationController()->GetTime()->SetPos(0);
-
-    // axial-Renderwindow muss mitscrollen ?!
-
-//    mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+//    m_SlicedImage->SetData(sl);
   }
 
-//  mitk::RenderingManager::GetInstance()->
   mitk::RenderingManager::GetInstance()->RequestUpdateAll();  //update the render windows
 }
 

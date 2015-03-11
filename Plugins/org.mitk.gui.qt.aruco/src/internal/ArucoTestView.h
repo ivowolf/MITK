@@ -80,6 +80,10 @@ class ArucoTestView : public QmitkAbstractView
 
     void CamParamsTest();
 
+    void SetTransformation();
+
+    void TestSliceSelector();
+
   protected:
 
     virtual void SetFocus();
@@ -128,6 +132,7 @@ class ArucoTestView : public QmitkAbstractView
     mitk::DataNode::Pointer m_SelectedImageNode;
     mitk::DataNode::Pointer m_SlicedImage;
     mitk::Image::Pointer m_RefImage;
+    mitk::AffineTransform3D::Pointer m_Transformation;
 
     bool m_Slicing = false;
 

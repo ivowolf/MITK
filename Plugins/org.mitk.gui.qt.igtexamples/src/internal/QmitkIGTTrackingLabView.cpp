@@ -289,6 +289,13 @@ void QmitkIGTTrackingLabView::OnInitialRegistration()
     newImageTransform->SetOffset(translationFloatNew);
     m_Controls.m_ImageComboBox->GetSelectedNode()->GetData()->GetGeometry()->SetIndexToWorldTransform(newImageTransform);
     m_T_ImageReg = m_Controls.m_ImageComboBox->GetSelectedNode()->GetData()->GetGeometry()->GetIndexToWorldTransform();
+
+    mitk::Surface::Pointer surface = mitk::Surface::New();
+    surface->GetGeometry()->SetIndexToWorldTransform(newImageTransform);
+    mitk::DataNode::Pointer node = mitk::DataNode::New();
+    node->SetName("Transformation");
+    node->SetData(surface);
+    this->GetDataStorage()->Add(node);
   }
   //################################################################
 

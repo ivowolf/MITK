@@ -75,6 +75,20 @@
     </widget>
    </item>
    <item>
+    <widget class="QPushButton" name="btnTransform">
+     <property name="text">
+      <string>SetTransformation</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPushButton" name="btnSliceSl">
+     <property name="text">
+      <string>SliceSelector</string>
+     </property>
+    </widget>
+   </item>
+   <item>
     <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
