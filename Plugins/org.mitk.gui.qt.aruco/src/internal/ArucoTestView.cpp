@@ -34,6 +34,7 @@ PURPOSE.  See the above copyright notices for more information.
 #include <mitkSurface.h>
 #include <mitkCone.h>
 #include <mitkExtractSliceFilter.h>
+#include <mitkIRenderingManager.h>
 
 #include "cvdrawingutils.h"
 
@@ -140,6 +141,11 @@ void ArucoTestView::TestSliceSelector()
 {
     QmitkRenderWindow* renderwindow = this->GetRenderWindowPart()->GetQmitkRenderWindow("axial");
     renderwindow->GetSliceNavigationController()->GetSlice()->SetPos(10);
+
+    mitk::DataNode::Pointer sagittal = this->GetDataStorage()->GetNamedNode("stdmulti.widget2.plane");
+    mitk::DataNode::Pointer coronal = this->GetDataStorage()->GetNamedNode("stdmulti.widget3.plane");
+    sagittal->SetVisibility(false);
+    coronal->SetVisibility(false);
 }
 
 void ArucoTestView::SetTransformation()
@@ -468,6 +474,13 @@ void ArucoTestView::SetupArUcoTracker()
 
   m_Timer->start(100);  //Every 100ms the method OnTimer() is called. -> 10fps
   //Now have look at the OnTimer() method.
+
+  //set the other two planes invisible to show only the axial plane in 3D
+  mitk::DataNode::Pointer sagittal = this->GetDataStorage()->GetNamedNode("stdmulti.widget2.plane");
+  mitk::DataNode::Pointer coronal = this->GetDataStorage()->GetNamedNode("stdmulti.widget3.plane");
+  sagittal->SetVisibility(false);
+  coronal->SetVisibility(false);
+
   mitk::RenderingManager::GetInstance()->InitializeViewsByBoundingObjects(this->GetDataStorageReference()->GetDataStorage());
 }
 #include <mitkPlaneGeometry.h>
@@ -496,8 +509,6 @@ void ArucoTestView::OnTimer()
 
     QmitkRenderWindow* renderwindow = this->GetRenderWindowPart()->GetQmitkRenderWindow("axial");
     renderwindow->GetSliceNavigationController()->GetSlice()->SetPos(indexPos[2]);
-
-    QmitkRenderWindow* renderwindow2 = this->GetRenderWindowPart()->GetQmitkRenderWindow("sagittal");
 
 //    mitk::ImageSliceSelector::Pointer sel = mitk::ImageSliceSelector::New();
 //    sel->SetInput(image);
