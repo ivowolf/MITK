@@ -193,25 +193,11 @@ void ArucoTestView::CameraTest()
 
   if(camera)
   {
-    //        camera->SetPosition(camPos[0],camPos[1],camPos[2]);
-    //        camera->SetFocalPoint(focalPoint[0],focalPoint[1],focalPoint[2]);
-    //        camera->SetViewUp(0,1,0);
-
-    double pos[3];
-    camera->GetPosition(pos);
-    MITK_INFO << "Position " << pos[0] << " " << pos[1] << " " << pos[2];
-    double focal[3];
-    camera->GetFocalPoint(focal);
-    MITK_INFO << "FocalPoint " << focal[0] << " " << focal[1] << " " << focal[2];
-    double view[3];
-    camera->GetViewUp(view);
-    MITK_INFO << "ViewUp " << view[0] << " " << view[1] << " " << view[2];
-
-    camera->SetPosition(0, -6.69213, 5.5);
-    //        camera->SetPosition(0.179, -0.984, 0.004); //0.179 -0.984 0.004
-    //        camera->SetPosition(camPos[0],camPos[1],camPos[2]);
-    camera->SetFocalPoint(0, 0, 0);
-    camera->SetViewUp(0, 0, 1);
+//    camera->SetPosition(0, -6.69213, 5.5);
+//    camera->SetPosition(0.179, -0.984, 0.004); //0.179 -0.984 0.004
+//    camera->SetPosition(camPos[0],camPos[1],camPos[2]);
+//    camera->SetFocalPoint(0, 0, 0);
+//    camera->SetViewUp(0, 0, 1);
 
     camera->SetPosition(0, 0, 0);
     camera->SetFocalPoint(0, 0, 1); // hier mit - testen
@@ -330,9 +316,14 @@ void ArucoTestView::CamParamsTest()
 
 void ArucoTestView::SetRefImage()
 {
-  this->m_RefImage = dynamic_cast<mitk::Image*>(m_SelectedImageNode->GetData())->Clone();
+  this->m_RefImage = dynamic_cast<mitk::Image*>(m_SelectedImageNode->GetData());
+
   if(m_RefImage.IsNull())
     MITK_ERROR << "Cant set the reference Image!" << std::endl;
+
+  mitk::Vector3D scale;
+  scale.Fill(0.2);
+  m_RefImage->GetGeometry()->SetSpacing(scale);
 }
 
 #include <mitkImageSliceSelector.h>
@@ -548,7 +539,7 @@ void ArucoTestView::Start()
   //  m_ArUcoTrackingDevice->setVideoSource(m_VideoSource);
   m_VideoSource->StartCapturing();
 
-  int hertz = 200;//m_Controls->UpdateRate->text().toInt();
+  int hertz = 1000;//m_Controls->UpdateRate->text().toInt();
   //  int updateTime = itk::Math::Round( static_cast<double>(1000.0/hertz) );
   int updateTime = static_cast<int>(static_cast<double>(1000.0/hertz));
 
