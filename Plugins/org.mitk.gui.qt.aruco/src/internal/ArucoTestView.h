@@ -70,19 +70,17 @@ class ArucoTestView : public QmitkAbstractView
 
     void SetImageGeo();
 
-    void WorldToImageExtract();
-
     void SetRefImage();
 
     void CameraTest();
-
-    void X();
 
     void CamParamsTest();
 
     void SetTransformation();
 
     void TestSliceSelector();
+
+    void GeoBugTest();
 
   protected:
 

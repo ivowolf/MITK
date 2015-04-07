@@ -122,20 +122,6 @@
     </widget>
    </item>
    <item>
-    <widget class="QPushButton" name="btnSetImageGeo">
-     <property name="text">
-      <string>SetImageGeo</string>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QPushButton" name="btnWorldToImage">
-     <property name="text">
-      <string>WorldToImage</string>
-     </property>
-    </widget>
-   </item>
-   <item>
     <widget class="QPushButton" name="btnSetImage">
      <property name="text">
       <string>SetReferenceImage</string>
@@ -150,16 +136,9 @@
     </widget>
    </item>
    <item>
-    <widget class="QPushButton" name="btnX">
+    <widget class="QPushButton" name="btnBugTest">
      <property name="text">
-      <string>X</string>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QPushButton" name="btnCamParams">
-     <property name="text">
-      <string>Set CamParams</string>
+      <string>GEO BUG BUTTON</string>
      </property>
     </widget>
    </item>

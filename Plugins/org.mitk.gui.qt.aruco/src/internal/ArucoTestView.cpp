@@ -116,17 +116,12 @@ void ArucoTestView::CreateQtPartControl( QWidget *parent )
   connect( m_Controls.btnSlice, SIGNAL(clicked()), this, SLOT(GetSliceFromMarkerPosition()) );
   connect( m_Controls.boxSlicing, SIGNAL(toggled(bool)), this, SLOT(SetPermanentSlicing(bool)));
   connect( m_Controls.btnCalibrate, SIGNAL(clicked()), this, SLOT(CalibrateProbe()));
-  connect( m_Controls.btnSetImageGeo, SIGNAL(clicked()), this, SLOT(SetImageGeo()));
-  connect( m_Controls.btnWorldToImage, SIGNAL(clicked()), this, SLOT(WorldToImageExtract()));
   connect( m_Controls.btnSetImage, SIGNAL(clicked()), this, SLOT(SetRefImage()));
   connect( m_Controls.btnTransform, SIGNAL(clicked()), this, SLOT(SetTransformation()) );
   connect( m_Controls.btnSliceSl, SIGNAL(clicked()), this, SLOT(TestSliceSelector()) );
 
   connect( m_Controls.btnTest, SIGNAL(clicked()), this, SLOT(CameraTest()) );
-
-  connect( m_Controls.btnX, SIGNAL(clicked()), this, SLOT(X()) );
-
-  connect( m_Controls.btnCamParams, SIGNAL(clicked()), this, SLOT(CamParamsTest()) );
+  connect( m_Controls.btnBugTest, SIGNAL(clicked()), this, SLOT(GeoBugTest()) );
 
   // retrieve old preferences
   m_VideoSource = mitk::OpenCVVideoSource::New();
@@ -135,6 +130,23 @@ void ArucoTestView::CreateQtPartControl( QWidget *parent )
 
   m_VideoSource->SetVideoCameraInput(0);
   m_ArUcoTrackingDevice->SetVideoSource(m_VideoSource);
+}
+
+void ArucoTestView::GeoBugTest()
+{
+    mitk::Image::Pointer bugImage = dynamic_cast<mitk::Image*>(m_SelectedImageNode->GetData());
+    mitk::Point3D pos;
+    mitk::FillVector3D(pos, 0.094, -5.903, 345.467);
+    mitk::BaseGeometry::Pointer geo = bugImage->GetGeometry();
+    mitk::Point3D indexPos;
+    geo->WorldToIndex(pos,indexPos);
+
+    std::cout << "WORLDPOS: X: " << pos[0] << " Y: " << pos[1] << " Z: " << pos[2] << std::endl;
+    std::cout << "INDEXPOS: X: " << indexPos[0] << " Y: " << indexPos[1] << " Z: " << indexPos[2] << std::endl;
+
+    unsigned int* dimensions = bugImage->GetDimensions();
+
+    std::cout << "Z SLICES: " << dimensions[2] << std::endl;
 }
 
 void ArucoTestView::TestSliceSelector()
@@ -162,17 +174,6 @@ void ArucoTestView::SetTransformation()
 #include <vtkCamera.h>
 #include <mitkPoint.h>
 #include <mitkCuboid.h>
-
-void ArucoTestView::X()
-{
-  mitk::Cuboid::Pointer cubo = mitk::Cuboid::New();
-  mitk::DataNode::Pointer node = mitk::DataNode::New();
-  node->SetName("CuboNode");
-  node->SetData(cubo);
-  this->GetDataStorage()->Add(node);
-
-  MITK_INFO << "Origin: " << cubo->GetGeometry()->GetOrigin();
-}
 
 void ArucoTestView::CameraTest()
 {
@@ -320,47 +321,9 @@ void ArucoTestView::SetRefImage()
 
   if(m_RefImage.IsNull())
     MITK_ERROR << "Cant set the reference Image!" << std::endl;
-
-  mitk::Vector3D scale;
-  scale.Fill(0.2);
-  m_RefImage->GetGeometry()->SetSpacing(scale);
 }
 
 #include <mitkImageSliceSelector.h>
-
-void ArucoTestView::WorldToImageExtract()
-{
-  //    mitk::NavigationData::Pointer navData = m_TrackingDeviceSource->GetOutput();
-  //    mitk::Point3D pos = navData->GetPosition();
-  //    mitk::BaseGeometry::Pointer geo = m_SelectedImageNode->GetData()->GetGeometry();
-  //    mitk::Point3D indexPos;
-  //    geo->WorldToIndex(pos,indexPos);
-
-  mitk::Image::Pointer image = dynamic_cast<mitk::Image*>(m_SelectedImageNode->GetData());
-  //    mitk::ExtractSliceFilter::Pointer sliceFilter = mitk::ExtractSliceFilter::New();
-
-  //    sliceFilter->SetInput(image);
-  ////    sliceFilter->SetWorldGeometry();
-  //    sliceFilter->Update();
-
-  //    mitk::Image::Pointer imageSlice = sliceFilter->GetOutput();
-
-  //    m_SlicedImage->SetData(imageSlice);
-
-  mitk::ImageSliceSelector::Pointer sel = mitk::ImageSliceSelector::New();
-  sel->SetInput(image);
-  sel->SetSliceNr(48);
-  sel->Update();
-
-  mitk::Image::Pointer sl = sel->GetOutput();
-  mitk::DataNode::Pointer test = mitk::DataNode::New();
-  test->SetData(sl);
-  test->SetName("sl");
-
-  this->GetDataStorage()->Add(test);
-
-  mitk::RenderingManager::GetInstance()->RequestUpdateAll();
-}
 
 void ArucoTestView::SetPermanentSlicing(bool slicing)
 {
@@ -429,7 +392,7 @@ void ArucoTestView::SetupArUcoTracker()
   //to manipulate rendering, e.g. the position and orientation as in our case.
   //  float scale[] = {10.0, 10.0, 10.0};
   mitk::Vector3D scale;
-  scale.Fill(5);
+  scale.Fill(20);
   cone->GetGeometry()->SetSpacing(scale);                       //scale it a little that so we can see something
   mitk::DataNode::Pointer node = mitk::DataNode::New(); //generate a new node to store the cone into
   //the DataStorage.
@@ -494,12 +457,20 @@ void ArucoTestView::OnTimer()
     mitk::Point3D indexPos;
     geo->WorldToIndex(pos,indexPos);
 
+    unsigned int* dimensions = m_RefImage->GetDimensions();
+
+    std::cout << "WORLDPOS: X: " << pos[0] << " Y: " << pos[1] << " Z: " << pos[2] << std::endl;
     std::cout << "INDEXPOS: X: " << indexPos[0] << " Y: " << indexPos[1] << " Z: " << indexPos[2] << std::endl;
+    std::cout << "AFTER CAST: " << static_cast<unsigned int>(indexPos[2]) << std::endl;
 
-    mitk::Image::Pointer image = m_RefImage->Clone();
-
+    unsigned int slicePos = static_cast<unsigned int>(indexPos[2]);
     QmitkRenderWindow* renderwindow = this->GetRenderWindowPart()->GetQmitkRenderWindow("axial");
-    renderwindow->GetSliceNavigationController()->GetSlice()->SetPos(indexPos[2]);
+    renderwindow->GetSliceNavigationController()->GetSlice()->SetPos(dimensions[2] - slicePos);
+
+    unsigned int realposition = renderwindow->GetSliceNavigationController()->GetSlice()->GetPos();
+    std::cout << "REAL POS: " << realposition << std::endl;
+    std::cout << "SHOWN: " << dimensions[2] - slicePos << std::endl;
+    //vermutlich anzahl z-Ebene - slicepos  ?!
 
 //    mitk::ImageSliceSelector::Pointer sel = mitk::ImageSliceSelector::New();
 //    sel->SetInput(image);
