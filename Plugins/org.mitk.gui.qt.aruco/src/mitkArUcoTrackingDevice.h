@@ -55,6 +55,9 @@ namespace mitk
     itkSetMacro(Offset,mitk::Vector3D)
     itkGetMacro(Offset,mitk::Vector3D)
 
+    itkGetMacro(Rotation, mitk::Matrix3D)
+    itkSetMacro(Rotation, mitk::Matrix3D)
+
     void SetPointGeometry(mitk::BaseGeometry* geo);
 
     /**
@@ -161,6 +164,8 @@ namespace mitk
     float m_MarkerSize;
     string m_ErrorMessage;
     mitk::Vector3D m_Offset;
+
+    mitk::Matrix3D m_Rotation;
 
     bool m_FirstGrabAfterOpening;
   };

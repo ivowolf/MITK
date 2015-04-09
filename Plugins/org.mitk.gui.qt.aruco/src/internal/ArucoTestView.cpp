@@ -66,6 +66,9 @@ cv::VideoCapture TheVideoCapturer;
 vector<aruco::Marker> TheMarkers;
 aruco::CameraParameters TheCameraParameters;
 
+BoardConfiguration BC;
+CameraParameters CP;
+
 pair<double,double> AvrgTime(0,0) ;//determines the average time required for detection
 double ThresParam1,ThresParam2;
 int iThresParam1,iThresParam2;
@@ -134,19 +137,34 @@ void ArucoTestView::CreateQtPartControl( QWidget *parent )
 
 void ArucoTestView::GeoBugTest()
 {
-    mitk::Image::Pointer bugImage = dynamic_cast<mitk::Image*>(m_SelectedImageNode->GetData());
-    mitk::Point3D pos;
-    mitk::FillVector3D(pos, 0.094, -5.903, 345.467);
-    mitk::BaseGeometry::Pointer geo = bugImage->GetGeometry();
-    mitk::Point3D indexPos;
-    geo->WorldToIndex(pos,indexPos);
+//  mitk::NavigationData::Pointer navData = m_TrackingDeviceSource->GetOutput();
+//  mitk::Quaternion orientation = navData->GetOrientation();
 
-    std::cout << "WORLDPOS: X: " << pos[0] << " Y: " << pos[1] << " Z: " << pos[2] << std::endl;
-    std::cout << "INDEXPOS: X: " << indexPos[0] << " Y: " << indexPos[1] << " Z: " << indexPos[2] << std::endl;
+//  mitk::Matrix3D rotaMat;
+//  for(int i=0; i<3; i++)
+//  {
+//    for(int j=0; j<3; j++)
+//    {
+//      rotaMat[i][j] = orientation.rotation_matrix_transpose().transpose()[i][j];
+//    }
+//  }
 
-    unsigned int* dimensions = bugImage->GetDimensions();
+  mitk::Matrix3D m_Rotation;
+  m_Rotation.Fill(0);
+  m_Rotation[0][0] = 1;
+  m_Rotation[1][1] = 2;
+  m_Rotation[0][2] = 1;
+  m_Rotation[2][2] = 1;
 
-    std::cout << "Z SLICES: " << dimensions[2] << std::endl;
+  mitk::Point3D point; point[0]=2; point[1]=5; point[2]=8;
+
+  mitk::Point3D final;
+  for(int i=0;i<3;i++)
+  {
+      final[i] =  m_Rotation[i][0] * point [0] + m_Rotation[i][1] * point[1] + m_Rotation[i][2] * point[2];
+  }
+
+  MITK_WARN << "MAT: " << final;
 }
 
 void ArucoTestView::TestSliceSelector()
@@ -444,6 +462,23 @@ void ArucoTestView::OnTimer()
   //new NavigationData is available. If we have a new NavigationData the cone position and orientation
   //will be adapted.
   m_Visualizer->Update();
+  TheInputImage = m_VideoSource->GetImage();
+
+  BC.readFromFile("/home/riecker/Development/src/Seminar/Plugins/org.mitk.gui.qt.aruco/TestData/chessboardinfo_pix.yml");
+  CP.readFromXMLFile("/home/riecker/Development/src/Seminar/Plugins/org.mitk.gui.qt.aruco/TestData/out_camera_data.xml");
+
+  BDetector.setParams(BC,CP,100);
+  BDetector.detect(TheInputImage);
+  Board b = BDetector.getDetectedBoard();
+
+  if(!b.empty())
+  {
+    m_Controls.boardDetectionLabel->setStyleSheet("QLabel { background-color : green;}");
+  }
+  else
+  {
+      m_Controls.boardDetectionLabel->setStyleSheet("QLabel { background-color : red;}");
+  }
 
   mitk::NavigationData::Pointer navData = m_TrackingDeviceSource->GetOutput();
   markerPos = navData->GetPosition();
@@ -459,10 +494,6 @@ void ArucoTestView::OnTimer()
 
     unsigned int* dimensions = m_RefImage->GetDimensions();
 
-    std::cout << "WORLDPOS: X: " << pos[0] << " Y: " << pos[1] << " Z: " << pos[2] << std::endl;
-    std::cout << "INDEXPOS: X: " << indexPos[0] << " Y: " << indexPos[1] << " Z: " << indexPos[2] << std::endl;
-    std::cout << "AFTER CAST: " << static_cast<unsigned int>(indexPos[2]) << std::endl;
-
     unsigned int slicePos = static_cast<unsigned int>(indexPos[2]);
     QmitkRenderWindow* renderwindow = this->GetRenderWindowPart()->GetQmitkRenderWindow("axial");
     renderwindow->GetSliceNavigationController()->GetSlice()->SetPos(dimensions[2] - slicePos);
@@ -470,35 +501,6 @@ void ArucoTestView::OnTimer()
     unsigned int realposition = renderwindow->GetSliceNavigationController()->GetSlice()->GetPos();
     std::cout << "REAL POS: " << realposition << std::endl;
     std::cout << "SHOWN: " << dimensions[2] - slicePos << std::endl;
-    //vermutlich anzahl z-Ebene - slicepos  ?!
-
-//    mitk::ImageSliceSelector::Pointer sel = mitk::ImageSliceSelector::New();
-//    sel->SetInput(image);
-//    sel->SetSliceNr(indexPos[2]);
-//    sel->Update();
-
-//    mitk::Image::Pointer sl = sel->GetOutput();
-
-
-//    mitk::PlaneGeometry::Pointer plane = mitk::PlaneGeometry::New();
-//    plane->InitializeStandardPlane(image->GetGeometry(), mitk::PlaneGeometry::Axial, indexPos[2], false, false);
-
-//    mitk::Point3D origin = plane->GetOrigin();
-//    mitk::Vector3D normal;
-
-//    normal = plane->GetNormal();
-//    normal.Normalize();
-//    origin += normal * 0.5;
-//    plane->SetOrigin(origin);
-
-//    mitk::ExtractSliceFilter::Pointer slicer = mitk::ExtractSliceFilter::New();
-//    slicer->SetInput(image);
-//    slicer->SetWorldGeometry(plane);
-//    slicer->Update();
-
-//    mitk::Image::Pointer sl = slicer->GetOutput();
-
-//    m_SlicedImage->SetData(sl);
   }
 
   mitk::RenderingManager::GetInstance()->RequestUpdateAll();  //update the render windows
@@ -541,10 +543,6 @@ void ArucoTestView::Start()
     TheMarkers[i].draw(TheInputImage,Scalar(0,0,255),1);
   }
 }
-
-BoardConfiguration BC;
-CameraParameters CP;
-
 
 #include <aruco/marker.h>
 
@@ -883,16 +881,28 @@ void ArucoTestView::CalibrateProbe()
 
   mitk::NavigationData::Pointer navData = m_TrackingDeviceSource->GetOutput();
   mitk::Point3D probePos = navData->GetPosition();
+  mitk::Quaternion orientation2 = navData->GetOrientation();
+
   //hier theoretisch noch die orientation holen und als rotation mitberechnen
   mitk::Point3D boardPos;
-  boardPos[0]=boardPosTmp[0]/100; boardPos[1]=boardPosTmp[1]/100; boardPos[2]=boardPosTmp[2]/100;
+  boardPos[0]=boardPosTmp[0]; boardPos[1]=boardPosTmp[1]; boardPos[2]=boardPosTmp[2];
 
   cout << "BOARD POSITION: " << boardPos[0] << " - " << boardPos[1] << " - " << boardPos[2] << endl;
   cout << "MARKER POSITION: " << probePos[0] << " - " << probePos[1] << " - " << probePos[2] << endl;
 
   mitk::Vector3D offset = boardPos - probePos;
 
+  mitk::Matrix3D rotaMat;
+  for(int i=0; i<3; i++)
+  {
+    for(int j=0; j<3; j++)
+    {
+      rotaMat[i][j] = orientation2.rotation_matrix_transpose().transpose()[i][j];
+    }
+  }
+
   m_ArUcoTrackingDevice->SetOffset(offset);
+  m_ArUcoTrackingDevice->SetRotation(rotaMat);
 
   //Probe Pos isn correct here need update from navData but it works fine - placed an output into
   //the OnTimer function and its calibrated!

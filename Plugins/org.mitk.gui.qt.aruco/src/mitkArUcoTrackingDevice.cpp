@@ -32,6 +32,11 @@ mitk::ArUcoTrackingDevice::ArUcoTrackingDevice() :
   //set the type of this tracking device
   this->m_Data = DeviceDataArUcoTracker;
 
+  m_Rotation.Fill(0);
+  m_Rotation[0][0] = 1;
+  m_Rotation[1][1] = 1;
+  m_Rotation[2][2] = 1;
+
   m_VideoSource = mitk::OpenCVVideoSource::New();
   m_Offset.Fill(0.0);
 
@@ -205,30 +210,39 @@ void mitk::ArUcoTrackingDevice::TrackTools()
                 double orientation[4];
                 //hier kommen 3D koordinaten von der ogre methode ?! funktioniert nur für marker ?
                 marker.OgreGetPoseParameters(position,orientation);
+
 //                markers.begin()->OgreGetPoseParameters( position, orientation );
-//                cout << "Position: " << position[0] << " - " << position[1] << " - " << position[2] << endl;
-//                cout << "Orientation: " << orientation[0] << " - " << orientation[1] << " - " << orientation[2] << " - " << orientation[3] << endl;
-                mitk::Point3D mitkpoint;
-//                cout << "Point: " << mitkpoint[0] << " - " << mitkpoint[1] << " - " << mitkpoint[2] << endl;
-                mitk::FillVector3D(mitkpoint, position[0], position[1], position[2]);
+
+//       !         mitk::Point3D mitkpoint;
+//       !         mitk::FillVector3D(mitkpoint, position[0], position[1], position[2]);
 
                 // TODO evaluieren ob das so funktioniert
-                mitk::Vector3D offsetPosition;// = tmp + m_Offset;
 //                mitkpoint[0]/=5; mitkpoint[1]/=5; mitkpoint[2]/=5;
-//                mitkpoint[0]; mitkpoint[1]; mitkpoint[2];
-                mitkpoint[0]+=m_Offset[0]; mitkpoint[1]+=m_Offset[1]; mitkpoint[2]+=m_Offset[2];
-                mitk::FillVector3D(offsetPosition,mitkpoint[0],mitkpoint[1],mitkpoint[2]);
+
+                //! Zuerst Translation dann Rotation oder umgekehrt? !//
+                position[0]+=m_Offset[0]; position[1]+=m_Offset[1]; position[2]+=m_Offset[2];
+
+                mitk::Point3D final;
+                for(int i=0;i<3;i++)
+                {
+                    final[i] =  m_Rotation[i][0] * position[0] + m_Rotation[i][1] * position[1] + m_Rotation[i][2] * position[2];
+                }
+//                Rotation noch anwenden
+//                point * m_Rotation.;
+
+//       !         mitk::Vector3D offsetPosition;// = tmp + m_Offset;
+//       !         mitk::FillVector3D(offsetPosition,mitkpoint[0],mitkpoint[1],mitkpoint[2]);
 
                 if(m_GeoSet)
                 {
                     mitk::Point3D worldPoint;
-                    m_Geometry->IndexToWorld(offsetPosition, worldPoint);
+                    m_Geometry->IndexToWorld(position, worldPoint);
 
                     this->m_AllTools[0]->SetPosition(worldPoint);
                 }
                 else
                 {
-                    this->m_AllTools[0]->SetPosition(offsetPosition);
+                    this->m_AllTools[0]->SetPosition(final);
                 }
                 //[0 2 3 1] oder [1 2 3 0] oder [3 0 1 2]
                 //eher nicht
