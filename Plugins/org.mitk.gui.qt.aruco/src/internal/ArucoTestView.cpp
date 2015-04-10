@@ -917,4 +917,10 @@ void ArucoTestView::CalibrateProbe()
   testPositionNode->SetName("Real_Position");
   this->GetDataStorage()->Add(testPositionNode);
 
+  mitk::DataNode::Pointer testPositionNode2 = mitk::DataNode::New();
+  mitk::PointSet::Pointer pointSet2 = mitk::PointSet::New();
+  pointSet2->SetPoint(0,boardPos);
+  testPositionNode2->SetData(pointSet2);
+  testPositionNode2->SetName("Board_Position");
+  this->GetDataStorage()->Add(testPositionNode2);
 }

@@ -227,8 +227,6 @@ void mitk::ArUcoTrackingDevice::TrackTools()
                 {
                     final[i] =  m_Rotation[i][0] * position[0] + m_Rotation[i][1] * position[1] + m_Rotation[i][2] * position[2];
                 }
-//                Rotation noch anwenden
-//                point * m_Rotation.;
 
 //       !         mitk::Vector3D offsetPosition;// = tmp + m_Offset;
 //       !         mitk::FillVector3D(offsetPosition,mitkpoint[0],mitkpoint[1],mitkpoint[2]);
@@ -242,7 +240,7 @@ void mitk::ArUcoTrackingDevice::TrackTools()
                 }
                 else
                 {
-                    this->m_AllTools[0]->SetPosition(final);
+                    this->m_AllTools[0]->SetPosition(position);
                 }
                 //[0 2 3 1] oder [1 2 3 0] oder [3 0 1 2]
                 //eher nicht
