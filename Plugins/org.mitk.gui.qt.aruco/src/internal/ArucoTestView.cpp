@@ -384,7 +384,7 @@ void ArucoTestView::SetupArUcoTracker()
   m_TrackingDeviceSource->RegisterAsMicroservice();
   m_ToolStorage->RegisterAsMicroservice(m_TrackingDeviceSource->GetMicroserviceID());
 
-  this->GetDataStorage()->Add(m_SlicedImage);
+//  this->GetDataStorage()->Add(m_SlicedImage);
 
   mitk::NavigationTool::Pointer navigationTool = mitk::NavigationTool::New();
   navigationTool->SetTrackingTool(m_ArUcoTrackingDevice->GetTool(0));
@@ -410,7 +410,7 @@ void ArucoTestView::SetupArUcoTracker()
   //to manipulate rendering, e.g. the position and orientation as in our case.
   //  float scale[] = {10.0, 10.0, 10.0};
   mitk::Vector3D scale;
-  scale.Fill(20);
+  scale.Fill(100);
   cone->GetGeometry()->SetSpacing(scale);                       //scale it a little that so we can see something
   mitk::DataNode::Pointer node = mitk::DataNode::New(); //generate a new node to store the cone into
   //the DataStorage.
@@ -887,8 +887,8 @@ void ArucoTestView::CalibrateProbe()
   mitk::Point3D boardPos;
   boardPos[0]=boardPosTmp[0]; boardPos[1]=boardPosTmp[1]; boardPos[2]=boardPosTmp[2];
 
-  cout << "BOARD POSITION: " << boardPos[0] << " - " << boardPos[1] << " - " << boardPos[2] << endl;
-  cout << "MARKER POSITION: " << probePos[0] << " - " << probePos[1] << " - " << probePos[2] << endl;
+//  cout << "BOARD POSITION: " << boardPos[0] << " - " << boardPos[1] << " - " << boardPos[2] << endl;
+//  cout << "MARKER POSITION: " << probePos[0] << " - " << probePos[1] << " - " << probePos[2] << endl;
 
   mitk::Vector3D offset = boardPos - probePos;
 
@@ -897,30 +897,37 @@ void ArucoTestView::CalibrateProbe()
   {
     for(int j=0; j<3; j++)
     {
-      rotaMat[i][j] = orientation2.rotation_matrix_transpose().transpose()[i][j];
+      rotaMat[i][j] = orientation2.rotation_matrix_transpose()[i][j];
     }
+  }
+
+  mitk::Point3D tipPosition;
+  for(int i=0;i<3;i++)
+  {
+      tipPosition[i] =  rotaMat[i][0] * offset[0] + rotaMat[i][1] * offset[1] + rotaMat[i][2] * offset[2];
   }
 
   m_ArUcoTrackingDevice->SetOffset(offset);
   m_ArUcoTrackingDevice->SetRotation(rotaMat);
+  m_ArUcoTrackingDevice->SetTipMarkerProbePos(tipPosition);
 
   //Probe Pos isn correct here need update from navData but it works fine - placed an output into
   //the OnTimer function and its calibrated!
-  mitk::Point3D regisPos = navData->GetPosition();
-  cout << "PROBE POSITION: " << regisPos[0] << " - " << regisPos[1] << " - " << regisPos[2] << endl;
-  cout << "OFFSET: " << offset[0] << " - " << offset[1] << " - " << offset[2] << endl;
+//  mitk::Point3D regisPos = navData->GetPosition();
+  cout << "PROBE POSITION: " << probePos[0] << " - " << probePos[1] << " - " << probePos[2] << endl;
+  cout << "BOARD POSITION: " << boardPos[0] << " - " << boardPos[1] << " - " << boardPos[2] << endl;
 
-  mitk::DataNode::Pointer testPositionNode = mitk::DataNode::New();
-  mitk::PointSet::Pointer pointSet = mitk::PointSet::New();
-  pointSet->SetPoint(0,probePos);
-  testPositionNode->SetData(pointSet);
-  testPositionNode->SetName("Real_Position");
-  this->GetDataStorage()->Add(testPositionNode);
+//  mitk::DataNode::Pointer testPositionNode = mitk::DataNode::New();
+//  mitk::PointSet::Pointer pointSet = mitk::PointSet::New();
+//  pointSet->SetPoint(0,probePos);
+//  testPositionNode->SetData(pointSet);
+//  testPositionNode->SetName("Real_Position");
+//  this->GetDataStorage()->Add(testPositionNode);
 
-  mitk::DataNode::Pointer testPositionNode2 = mitk::DataNode::New();
-  mitk::PointSet::Pointer pointSet2 = mitk::PointSet::New();
-  pointSet2->SetPoint(0,boardPos);
-  testPositionNode2->SetData(pointSet2);
-  testPositionNode2->SetName("Board_Position");
-  this->GetDataStorage()->Add(testPositionNode2);
+//  mitk::DataNode::Pointer testPositionNode2 = mitk::DataNode::New();
+//  mitk::PointSet::Pointer pointSet2 = mitk::PointSet::New();
+//  pointSet2->SetPoint(0,boardPos);
+//  testPositionNode2->SetData(pointSet2);
+//  testPositionNode2->SetName("Board_Position");
+//  this->GetDataStorage()->Add(testPositionNode2);
 }

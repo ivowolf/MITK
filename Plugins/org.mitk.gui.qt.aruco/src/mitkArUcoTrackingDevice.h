@@ -22,6 +22,8 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include <mitkIGTConfig.h>
 #include <mitkTrackingDevice.h>
 #include "mitkArUcoTool.h"
+#include <mitkInternalTrackingTool.h>
+#include <mitkTrackingTool.h>
 #include <mitkBaseGeometry.h>
 
 #include <itkMultiThreader.h>
@@ -59,6 +61,8 @@ namespace mitk
     itkSetMacro(Rotation, mitk::Matrix3D)
 
     void SetPointGeometry(mitk::BaseGeometry* geo);
+
+    void SetTipMarkerProbePos(mitk::Point3D pos);
 
     /**
     * \brief Starts the tracking.
@@ -160,6 +164,9 @@ namespace mitk
 
     mitk::BaseGeometry* m_Geometry;
     bool m_GeoSet = false;
+
+    mitk::Point3D m_TipMarkerProbePos;
+    bool m_TipPosSet = false;
 
     float m_MarkerSize;
     string m_ErrorMessage;

@@ -32,6 +32,8 @@ mitk::ArUcoTrackingDevice::ArUcoTrackingDevice() :
   //set the type of this tracking device
   this->m_Data = DeviceDataArUcoTracker;
 
+  m_TipMarkerProbePos[0]=0; m_TipMarkerProbePos[1]=0; m_TipMarkerProbePos[2]=0;
+
   m_Rotation.Fill(0);
   m_Rotation[0][0] = 1;
   m_Rotation[1][1] = 1;
@@ -162,6 +164,12 @@ std::vector<mitk::ArUcoTool::Pointer> mitk::ArUcoTrackingDevice::GetAllTools()
   return this->m_AllTools;
 }
 
+void mitk::ArUcoTrackingDevice::SetTipMarkerProbePos(mitk::Point3D pos)
+{
+    m_TipMarkerProbePos = pos;
+    m_TipPosSet = true;
+}
+
 cv::Mat grabbedImageCopy;
 
 void mitk::ArUcoTrackingDevice::TrackTools()
@@ -211,40 +219,54 @@ void mitk::ArUcoTrackingDevice::TrackTools()
                 //hier kommen 3D koordinaten von der ogre methode ?! funktioniert nur für marker ?
                 marker.OgreGetPoseParameters(position,orientation);
 
-//                markers.begin()->OgreGetPoseParameters( position, orientation );
-
 //       !         mitk::Point3D mitkpoint;
 //       !         mitk::FillVector3D(mitkpoint, position[0], position[1], position[2]);
 
                 // TODO evaluieren ob das so funktioniert
 //                mitkpoint[0]/=5; mitkpoint[1]/=5; mitkpoint[2]/=5;
 
-                //! Zuerst Translation dann Rotation oder umgekehrt? !//
-                position[0]+=m_Offset[0]; position[1]+=m_Offset[1]; position[2]+=m_Offset[2];
+//                position[0]+=m_Offset[0]; position[1]+=m_Offset[1]; position[2]+=m_Offset[2];
 
-                mitk::Point3D final;
-                for(int i=0;i<3;i++)
-                {
-                    final[i] =  m_Rotation[i][0] * position[0] + m_Rotation[i][1] * position[1] + m_Rotation[i][2] * position[2];
-                }
+//                mitk::Point3D final;
+//                for(int i=0;i<3;i++)
+//                {
+//                    final[i] =  m_Rotation[i][0] * position[0] + m_Rotation[i][1] * position[1] + m_Rotation[i][2] * position[2];
+//                }
 
 //       !         mitk::Vector3D offsetPosition;// = tmp + m_Offset;
 //       !         mitk::FillVector3D(offsetPosition,mitkpoint[0],mitkpoint[1],mitkpoint[2]);
 
-                if(m_GeoSet)
-                {
-                    mitk::Point3D worldPoint;
-                    m_Geometry->IndexToWorld(position, worldPoint);
+                //[0 2 3 1] oder [1 2 3 0] oder [3 0 1 2]
+                mitk::Quaternion mitkorientation(orientation[1], orientation[2], orientation[3], orientation[0]);
 
-                    this->m_AllTools[0]->SetPosition(worldPoint);
+                if(m_TipPosSet)
+                {
+                    mitk::Matrix3D rotaMat;
+                    for(int i=0; i<3; i++)
+                    {
+                      for(int j=0; j<3; j++)
+                      {
+                        rotaMat[i][j] = mitkorientation.rotation_matrix_transpose().transpose()[i][j];
+                      }
+                    }
+
+                    mitk::Point3D tipPosition;
+                    for(int i=0;i<3;i++)
+                    {
+                        tipPosition[i] =  rotaMat[i][0] * m_TipMarkerProbePos[0] + rotaMat[i][1] * m_TipMarkerProbePos[1] + rotaMat[i][2] * m_TipMarkerProbePos[2];
+                    }
+
+                    tipPosition[0]+=position[0]; tipPosition[1]+=position[1]; tipPosition[2]+=position[2];
+//                    this->m_AllTools[0]->SetPosition(position);
+                    this->m_AllTools[0]->SetToolTip(tipPosition);
+                    std::cout << "TIP-POSITION: X:" << tipPosition[0] << " Y: " << tipPosition[1] << " Z: " << tipPosition[2] << std::endl;
                 }
                 else
                 {
                     this->m_AllTools[0]->SetPosition(position);
+                    std::cout << "TOOL-POSITION: X:" << position[0] << " Y: " << position[1] << " Z: " << position[2] << std::endl;
                 }
-                //[0 2 3 1] oder [1 2 3 0] oder [3 0 1 2]
-                //eher nicht
-                mitk::Quaternion mitkorientation(orientation[1], orientation[2], orientation[3], orientation[0]);
+
                 this->m_AllTools[0]->SetOrientation(mitkorientation);
                 this->m_AllTools[0]->SetDataValid(true);
               }
