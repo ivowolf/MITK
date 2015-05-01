@@ -205,6 +205,11 @@ void QmitkIGTTrackingLabView::OnInitialRegistration()
   mitk::PointSet::Pointer imageFiducials = dynamic_cast<mitk::PointSet*>(m_ImageFiducialsDataNode->GetData());
   mitk::PointSet::Pointer trackerFiducials = dynamic_cast<mitk::PointSet*>(m_TrackerFiducialsDataNode->GetData());
 
+  mitk::Surface::Pointer surface = mitk::Surface::New();
+  mitk::DataNode::Pointer surfaceNode = mitk::DataNode::New();
+  surfaceNode->SetData(surface);
+  ds->Add(surfaceNode);
+
   //############### conversion to vtk data types (we will use the vtk landmark based transform) ##########################
   //convert point sets to vtk poly data
   vtkSmartPointer<vtkPoints> sourcePoints = vtkSmartPointer<vtkPoints>::New();
@@ -284,6 +289,13 @@ void QmitkIGTTrackingLabView::OnInitialRegistration()
     newImageTransform->SetOffset(translationFloatNew);
     m_Controls.m_ImageComboBox->GetSelectedNode()->GetData()->GetGeometry()->SetIndexToWorldTransform(newImageTransform);
     m_T_ImageReg = m_Controls.m_ImageComboBox->GetSelectedNode()->GetData()->GetGeometry()->GetIndexToWorldTransform();
+
+    mitk::Surface::Pointer surface = mitk::Surface::New();
+    surface->GetGeometry()->SetIndexToWorldTransform(newImageTransform);
+    mitk::DataNode::Pointer node = mitk::DataNode::New();
+    node->SetName("Transformation");
+    node->SetData(surface);
+    this->GetDataStorage()->Add(node);
   }
   //################################################################
 
@@ -380,7 +392,8 @@ void QmitkIGTTrackingLabView::OnPermanentRegistration(bool on)
     }
 
     //remember initial object transform to calculate the object to marker transform later on and convert it to navigation data
-    mitk::AffineTransform3D::Pointer transform = this->m_Controls.m_ObjectComboBox->GetSelectedNode()->GetData()->GetGeometry()->GetIndexToWorldTransform();
+//    mitk::AffineTransform3D::Pointer transform = this->m_Controls.m_ObjectComboBox->GetSelectedNode()->GetData()->GetGeometry()->GetIndexToWorldTransform();
+    mitk::AffineTransform3D::Pointer transform = this->m_Controls.m_ImageComboBox->GetSelectedNode()->GetData()->GetGeometry()->GetIndexToWorldTransform();
     mitk::NavigationData::Pointer T_Object = mitk::NavigationData::New(transform,false); //TODO: catch exception during conversion?
 
     //then reset the transform because we will now start to calculate the permanent registration
@@ -419,6 +432,10 @@ void QmitkIGTTrackingLabView::OnPermanentRegistration(bool on)
       imageNode->AddProperty( "reslice interpolation", mitk::VtkResliceInterpolationProperty::New(VTK_RESLICE_LINEAR) );
       m_PermanentRegistrationFilter->SetInput(1,this->m_ObjectmarkerNavigationData);
       m_PermanentRegistrationFilter->SetRepresentationObject(1,imageNode->GetData());
+
+      //von dem ImageNode kann ich mir die Axial-Schicht ziehen und diese als neuen
+      //2D Node laden und das alte Bild einfach als helper Node laden. An dieser Stelle
+      //im Code einfügen oder neu machen da alte Funktion nicht mehr funktionieren wird ?!
 
       //for the image we can't use NavigationData objects as transforms because an image needs additional geometry information, e.g., spacing
       //thus we use mitk::AffineTransform3D objects

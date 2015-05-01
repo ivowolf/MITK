@@ -1,0 +1,19 @@
+/**
+\bundlemainpage{org.hsma.aruco} Aruco
+
+\image html icon.xpm "Icon of Aruco"
+
+Available sections:
+  - \ref org.hsma.arucoOverview
+
+\section org.hsma.arucoOverview
+Describe the features of your awesome plugin here
+<ul>
+<li>Increases productivity
+<li>Creates beautiful images
+<li>Generates PhD thesis
+<li>Brings world peace
+</ul>
+
+*/
+

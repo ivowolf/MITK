@@ -1,0 +1,16 @@
+/**
+  \defgroup org_hsma_aruco org.hsma.aruco
+  \ingroup MITKPlugins
+
+  \brief Describe your plugin here.
+  
+*/
+
+/**
+  \defgroup org_hsma_aruco_internal Internal
+  \ingroup org_hsma_aruco
+
+  \brief This subcategory includes the internal classes of the org.hsma.aruco plugin. Other
+  plugins must not rely on these classes. They contain implementation details and their interface
+  may change at any time. We mean it.
+*/
