@@ -79,7 +79,7 @@ void cvTackBarEvents(int pos,void*);
 const std::string ArucoTestView::VIEW_ID = "org.mitk.views.arucotestview";
 
 ArucoTestView::ArucoTestView()
-  : m_VideoSource(0), m_Timer(NULL)
+  : m_VideoSource(0), m_Timer(NULL), m_Slicing(false) 
 {
   m_RefImage = mitk::Image::New();
   m_TrackingDeviceSource = mitk::TrackingDeviceSource::New();
@@ -544,7 +544,7 @@ void ArucoTestView::Start()
   }
 }
 
-#include <aruco/marker.h>
+#include <marker.h>
 
 void ArucoTestView::NewFrameAvailable(mitk::VideoSource*)
 {

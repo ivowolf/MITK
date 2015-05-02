@@ -132,7 +132,7 @@ class ArucoTestView : public QmitkAbstractView
     mitk::Image::Pointer m_RefImage;
     mitk::AffineTransform3D::Pointer m_Transformation;
 
-    bool m_Slicing = false;
+    bool m_Slicing;
 
 };
 

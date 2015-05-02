@@ -163,10 +163,10 @@ namespace mitk
     aruco::MarkerDetector m_MarkerDetector;
 
     mitk::BaseGeometry* m_Geometry;
-    bool m_GeoSet = false;
+    bool m_GeoSet;
 
     mitk::Point3D m_TipMarkerProbePos;
-    bool m_TipPosSet = false;
+    bool m_TipPosSet;
 
     float m_MarkerSize;
     string m_ErrorMessage;

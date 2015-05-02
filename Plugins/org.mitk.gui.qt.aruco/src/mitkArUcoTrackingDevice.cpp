@@ -25,7 +25,7 @@ typedef itk::MutexLockHolder<itk::FastMutexLock> MutexLockHolder;
 
 
 mitk::ArUcoTrackingDevice::ArUcoTrackingDevice() :
-  mitk::TrackingDevice(), m_MarkerSize(-1), m_FirstGrabAfterOpening(true)
+  mitk::TrackingDevice(), m_GeoSet(false), m_TipPosSet(false), m_MarkerSize(-1), m_FirstGrabAfterOpening(true)
 {
   // not added to TrackingDeviceList (which is static -> has to be refactored)
   TrackingDeviceData DeviceDataArUcoTracker = {VirtualTracker, "ArUco Tracker", "cube"};
