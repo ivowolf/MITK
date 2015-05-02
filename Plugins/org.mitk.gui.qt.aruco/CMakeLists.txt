@@ -12,8 +12,10 @@ MACRO_CREATE_MITK_CTK_PLUGIN(
 )
 
 find_package(aruco REQUIRED )
+include_directories(${aruco_INCLUDE_DIRS})
+LINK_DIRECTORIES(${aruco_LIB_DIR})
 target_link_libraries(${PLUGIN_TARGET} ${aruco_LIBS})
-
+#SET_TARGET_PROPERTIES(${PLUGIN_TARGET} PROPERTIES LINK_LIBRARIES ${aruco_LIB_DIR})
 
 ### OLD STUFF MAYBE NEEDED FOR WINDOWS & MAC ###
 #set(ArUco_LIBRARY_DIR "/home/riecker/Development/aruco/aruco-1.2.5-bin/src" CACHE FILEPATH "Path of ArUco lib.")
